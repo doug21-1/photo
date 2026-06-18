@@ -35,7 +35,6 @@
             background-color: #000;
         }
 
-        /* Alteração 1: Novo estilo css para a moldura oficial */
         #moldura-oficial {
             position: absolute;
             inset: 0;
@@ -100,19 +99,11 @@
     <p class="sub">Rua Emiliano Manojo - 6ª Edição</p>
 
     <div id="camera-container">
-        <!-- Alteração 4: Parâmetros extras para compatibilidade com iPhone 14, 15 e 16 -->
-        <video
-            id="video"
-            autoplay
-            muted
-            playsinline
-            webkit-playsinline>
-        </video>
-        <!-- Alteração 1: Forçando quebra de cache na url da imagem -->
+        <video id="video" autoplay muted playsinline webkit-playsinline></video>
         <img id="moldura-oficial" src="./borda.png?v=1" alt="Moldura Junina">
     </div>
 
-    <button id="tirar-foto" disabled>⌛ Carregando Moldura...</button>
+    <button id="tirar-foto" disabled>📸 Tirar Foto!</button>
     <div id="log-erro"></div>
 
     <canvas id="canvas"></canvas>
@@ -138,65 +129,64 @@
             logErro.innerHTML = "⚠️ Atenção: A câmera só funcionará se o site for publicado em um link seguro 'https://'.";
         }
 
-        // Alteração 5: Melhoria na inicialização da câmera para o ecossistema iPhone
         async function iniciarCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: {
-                            ideal: "user"
-                        }
-                    },
+                    video: { facingMode: "user" },
                     audio: false
                 });
-
                 video.srcObject = stream;
                 await video.play();
+                btnTirarFoto.disabled = false;
             } catch (err) {
                 console.error(err);
-                logErro.innerHTML = "Não foi possível acessar a câmera. Verifique as permissões do navegador.";
+                logErro.innerHTML = "Não foi possível acessar a câmera. Verifique as permissões de privacidade do seu navegador.";
                 btnTirarFoto.disabled = true;
             }
         }
 
-        // Alteração 2: Carregamento monitorado por metadados para iPhones lentos
-        window.addEventListener('load', async () => {
-            await iniciarCamera();
-
-            video.addEventListener('loadedmetadata', () => {
-                btnTirarFoto.disabled = false;
-                btnTirarFoto.innerHTML = "📸 Tirar Foto!";
-            });
+        window.addEventListener('load', () => {
+            iniciarCamera();
         });
 
-        // Alteração 3: Evento do botão corrigido com validação do readyState e posicionamento dinâmico
-        btnTirarFoto.addEventListener('click', async () => {
-            if (
-                !video.videoWidth ||
-                !video.videoHeight ||
-                video.readyState < 2
-            ) {
-                alert("A câmera ainda está iniciando. Aguarde alguns segundos.");
-                return;
-            }
+        btnTirarFoto.addEventListener('click', () => {
+            // Pega o tamanho exato e real gerado pela câmera do dispositivo
+            const vw = video.videoWidth || 640;
+            const vh = video.videoHeight || 480;
 
-            const vw = video.videoWidth;
-            const vh = video.videoHeight;
-
+            // Define o tamanho do Canvas para ser IGUAL ao tamanho nativo capturado pela câmera
             canvas.width = vw;
             canvas.height = vh;
 
             const ctx = canvas.getContext('2d');
 
+            // 1. Desenha a imagem da câmera no tamanho original (sem distorções e sem cortes artificiais)
             ctx.drawImage(video, 0, 0, vw, vh);
 
+            // 2. Sobrepõe a moldura (borda.png) acompanhando proporcionalmente as dimensões originais da foto
             if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
-                ctx.drawImage(imgMoldura, 0, 0, vw, vh);
+                // Aplica o comportamento de 'object-fit: cover' no desenho para que a moldura cubra o tamanho exato do feed
+                const fitaMoldura = imgMoldura.naturalWidth / imgMoldura.naturalHeight;
+                const fitaCanvas = vw / vh;
+                let dWidth, dHeight, dx, dy;
+
+                if (fitaMoldura > fitaCanvas) {
+                    dHeight = vh;
+                    dWidth = vh * fitaMoldura;
+                    dx = (vw - dWidth) / 2;
+                    dy = 0;
+                } else {
+                    dWidth = vw;
+                    dHeight = vw / fitaMoldura;
+                    dx = 0;
+                    dy = (vh - dHeight) / 2;
+                }
+                ctx.drawImage(imgMoldura, dx, dy, dWidth, dHeight);
             }
 
+            // 3. Exporta a foto no tamanho nativo exato
             try {
                 const dataUrl = canvas.toDataURL("image/png");
-
                 fotoFinal.src = dataUrl;
                 linkBaixar.href = dataUrl;
 
