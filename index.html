@@ -2,14 +2,14 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Foto Junina - Emiliano Manojo</title>
     <style>
         * { box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #f7ebd3; /* Tom pastel combinando com festa junina */
+            background-color: #f7ebd3;
             margin: 0;
             padding: 20px;
         }
@@ -33,24 +33,24 @@
             object-fit: cover;
         }
 
-        /* --- ELEMENTOS DA MOLDURA JUNINA --- */
+        /* --- ELEMENTOS DA MOLDURA JUNINA CORRIGIDOS --- */
         .elemento-moldura {
             position: absolute;
-            pointer-events: none; /* Evita bloquear o clique na tela */
+            pointer-events: none;
             z-index: 10;
         }
 
-        /* Letreiro Principal no Topo */
+        /* Letreiro Festa Junina centralizado no topo */
         #mol-letreiro {
             top: 15px;
             left: 50%;
             transform: translateX(-50%);
-            width: 80%; /* Ajuste conforme o tamanho do seu recorte */
+            width: 85%;
         }
 
         /* Varal de Bandeirinhas logo abaixo do letreiro */
         #mol-bandeirinhas {
-            top: 75px;
+            top: 70px;
             left: 0;
             width: 100%;
         }
@@ -62,16 +62,15 @@
             width: 100%;
         }
 
-        /* Chapéu de Palha decorativo no canto superior */
+        /* Chapéu de Palha decorativo no canto */
         #mol-chapeu {
             top: 5px;
             right: 5px;
-            width: 60px;
+            width: 70px;
         }
-        /* ----------------------------------- */
 
         button {
-            background-color: #f57c00; /* Laranja junino */
+            background-color: #f57c00;
             color: white;
             border: none;
             padding: 15px 35px;
@@ -81,6 +80,7 @@
             margin-top: 20px;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            -webkit-appearance: none; /* Remove estilos padrão do iOS */
         }
 
         button:hover { background-color: #e64a19; }
@@ -98,6 +98,13 @@
             border-radius: 15px;
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
+
+        /* Instrução específica exigida para comportamento de salvamento no iPhone */
+        .aviso-ios {
+            font-size: 14px;
+            color: #555;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -105,9 +112,10 @@
     <h2>Arraiá Emiliano Manojo 🎉</h2>
 
     <div id="camera-container">
-        <video id="video" autoplay playsinline></video>
+        <!-- Correção iOS: Atributos 'autoplay', 'playsinline' e 'muted' obrigatórios juntos -->
+        <video id="video" autoplay playsinline muted></video>
         
-        <!-- Imagens da sua moldura sobrepostas à câmera -->
+        <!-- Elementos transparentes recortados do seu arquivo -->
         <img id="mol-letreiro" class="elemento-moldura" src="festa-junina-letreiro.png" alt="Letreiro">
         <img id="mol-bandeirinhas" class="elemento-moldura" src="bandeirinhas.png" alt="Bandeirinhas">
         <img id="mol-chapeu" class="elemento-moldura" src="chapeu.png" alt="Chapéu">
@@ -122,6 +130,7 @@
         <h3>Olha a chuva! É verdade! 🌽</h3>
         <img id="foto-final" src="" alt="Sua Foto Junina">
         <br>
+        <p class="aviso-ios">💡 No iPhone, pressione e segure o dedo na imagem acima para <b>Salvar em Fotos</b>.</p>
         <a id="baixar-foto" download="foto-festa-junina.png"><button>💾 Baixar Minha Foto</button></a>
     </div>
 
@@ -133,55 +142,79 @@
         const fotoFinal = document.getElementById('foto-final');
         const linkBaixar = document.getElementById('baixar-foto');
 
-        // Carrega os elementos para desenhar depois no Canvas
         const imgLetreiro = document.getElementById('mol-letreiro');
         const imgBandeirinhas = document.getElementById('mol-bandeirinhas');
         const imgChapeu = document.getElementById('mol-chapeu');
         const imgCerca = document.getElementById('mol-cerca');
 
+        // Configuração de restrição estrita para iOS aceitar a inicialização
         const constraints = {
-            video: { facingMode: "user" },
+            video: {
+                facingMode: "user",
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
             audio: false
         };
 
+        // Garante que o stream rode corretamente no ecossistema Apple
         navigator.mediaDevices.getUserMedia(constraints)
-            .then((stream) => { video.srcObject = stream; })
-            .catch((err) => { alert("Por favor, permita o acesso à câmera."); });
+            .then((stream) => { 
+                video.srcObject = stream;
+                // Força o play manual caso o iOS bloqueie o autoplay
+                video.play().catch(e => console.log("Autoplay bloqueado, aguardando clique."));
+            })
+            .catch((err) => { 
+                alert("Por favor, garanta o acesso à câmera nas configurações do seu Safari."); 
+            });
 
         btnTirarFoto.addEventListener('click', () => {
+            // Correção Safari: Verifica se o vídeo está pronto e com dimensões válidas
+            if (video.videoWidth === 0 || video.videoHeight === 0) {
+                alert("A câmera ainda está carregando os frames. Tente novamente em um segundo.");
+                return;
+            }
+
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
             
-            // 1. Desenha o fundo (a pessoa)
+            // 1. Renderiza o feed da câmera de forma síncrona
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // 2. Desenha cada elemento por cima de forma proporcional ao tamanho do canvas
-            // Proporção Letreiro
-            let letreiroLargura = canvas.width * 0.8;
-            let letreiroAltura = (imgLetreiro.naturalHeight / imgLetreiro.naturalWidth) * letreiroLargura;
-            context.drawImage(imgLetreiro, (canvas.width - letreiroLargura) / 2, 15, letreiroLargura, letreiroAltura);
+            // 2. Renderiza as sobreposições calculando proporções originais
+            // Letreiro
+            if (imgLetreiro.complete) {
+                let letreiroLargura = canvas.width * 0.85;
+                let letreiroAltura = (imgLetreiro.naturalHeight / imgLetreiro.naturalWidth) * letreiroLargura;
+                context.drawImage(imgLetreiro, (canvas.width - letreiroLargura) / 2, 30, letreiroLargura, letreiroAltura);
+            }
 
-            // Proporção Bandeirinhas
-            let bandAltura = (imgBandeirinhas.naturalHeight / imgBandeirinhas.naturalWidth) * canvas.width;
-            context.drawImage(imgBandeirinhas, 0, 75, canvas.width, bandAltura);
+            // Bandeirinhas
+            if (imgBandeirinhas.complete) {
+                let bandAltura = (imgBandeirinhas.naturalHeight / imgBandeirinhas.naturalWidth) * canvas.width;
+                context.drawImage(imgBandeirinhas, 0, 140, canvas.width, bandAltura);
+            }
 
-            // Proporção Chapéu
-            let chapeuLargura = canvas.width * 0.15;
-            let chapeuAltura = (imgChapeu.naturalHeight / imgChapeu.naturalWidth) * chapeuLargura;
-            context.drawImage(imgChapeu, canvas.width - chapeuLargura - 5, 5, chapeuLargura, chapeuAltura);
+            // Chapéu
+            if (imgChapeu.complete) {
+                let chapeuLargura = canvas.width * 0.18;
+                let chapeuAltura = (imgChapeu.naturalHeight / imgChapeu.naturalWidth) * chapeuLargura;
+                context.drawImage(imgChapeu, canvas.width - chapeuLargura - 10, 10, chapeuLargura, chapeuAltura);
+            }
 
-            // Proporção Cerca
-            let cercaAltura = (imgCerca.naturalHeight / imgCerca.naturalWidth) * canvas.width;
-            context.drawImage(imgCerca, 0, canvas.height - cercaAltura, canvas.width, cercaAltura);
+            // Cerca
+            if (imgCerca.complete) {
+                let cercaAltura = (imgCerca.naturalHeight / imgCerca.naturalWidth) * canvas.width;
+                context.drawImage(imgCerca, 0, canvas.height - cercaAltura, canvas.width, cercaAltura);
+            }
 
-            // 3. Gera resultado final
+            // 3. Converte para Base64 compatível com Safari
             const dataUrl = canvas.toDataURL('image/png');
             fotoFinal.src = dataUrl;
             linkBaixar.href = dataUrl;
-            resultadoDiv.style.display = 'block';
             
-            // Rola a página até o resultado para facilitar a visualização no celular
+            resultadoDiv.style.display = 'block';
             resultadoDiv.scrollIntoView({ behavior: 'smooth' });
         });
     </script>
