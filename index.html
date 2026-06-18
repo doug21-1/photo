@@ -20,7 +20,7 @@
             position: relative;
             width: 100%;
             max-width: 400px;
-            aspect-ratio: 3 / 4; /* Proporção ideal de retrato para celular */
+            aspect-ratio: 3 / 4;
             margin: 0 auto;
             border-radius: 15px;
             overflow: hidden;
@@ -35,16 +35,18 @@
             background-color: #000;
         }
 
-        /* Moldura única cobrindo toda a área da câmera */
+        /* Configuração da sua nova moldura borda.png */
         #moldura-oficial {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* Permite interações por trás da imagem */
+            pointer-events: none;
             z-index: 10;
             object-fit: fill;
+            /* Remove o quadriculado cinza do meio da imagem na tela do celular */
+            mix-blend-mode: multiply; 
         }
 
         button {
@@ -59,7 +61,6 @@
             font-weight: bold;
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
             -webkit-appearance: none;
-            transition: background 0.2s;
         }
 
         button:hover { background-color: #e64a19; }
@@ -101,11 +102,10 @@
     <p class="sub">Rua Emiliano Manojo - 6ª Edição</p>
 
     <div id="camera-container">
-        <!-- 'playsinline' e 'muted' garantem estabilidade total no Safari do iPhone -->
         <video id="video" autoplay playsinline muted></video>
         
-        <!-- Sua moldura PNG transparente unificada que ficará sobre a câmera -->
-        <img id="moldura-oficial" src="moldura-junina.png" alt="Moldura Junina">
+        <!-- Alterado para buscar o arquivo borda.png -->
+        <img id="moldura-oficial" src="borda.png" alt="Moldura Junina">
     </div>
 
     <button id="tirar-foto">📸 Tirar Foto!</button>
@@ -130,18 +130,16 @@
         const logErro = document.getElementById('log-erro');
         const imgMoldura = document.getElementById('moldura-oficial');
 
-        // Alerta de protocolo seguro obrigatório para câmeras mobile
         if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
             logErro.innerHTML = "⚠️ Atenção: A câmera só funcionará se o site for publicado em um link seguro 'https://'.";
         }
 
-        // Inicialização da câmera limpa e compatível com iOS
         async function iniciarCamera() {
             const constraints = {
                 video: {
                     facingMode: "user",
                     width: { ideal: 1080 },
-                    height: { ideal: 1440 } // Proporção 3:4 casando com o container
+                    height: { ideal: 1440 }
                 },
                 audio: false
             };
@@ -152,7 +150,7 @@
                 await video.play();
             } catch (err) {
                 console.error(err);
-                logErro.innerHTML = "Não foi possível acessar a câmera. Verifique se o Safari possui permissão de câmera nos Ajustes do iPhone.";
+                logErro.innerHTML = "Não foi possível acessar a câmera. Verifique se deu permissão de câmera no seu navegador.";
             }
         }
 
@@ -164,20 +162,20 @@
                 return;
             }
 
-            // Clona perfeitamente as dimensões do vídeo capturado
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
             
-            // 1. Desenha a foto tirada pela pessoa
+            // 1. Desenha o rosto da pessoa
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // 2. Desenha a moldura por cima cobrindo toda a área de forma limpa e síncrona
+            // 2. Desenha a moldura por cima aplicando o filtro para remover o quadriculado do meio
             if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
+                context.globalCompositeOperation = 'multiply';
                 context.drawImage(imgMoldura, 0, 0, canvas.width, canvas.height);
+                context.globalCompositeOperation = 'source-over'; // Reseta o canvas para o modo normal
             }
 
-            // 3. Renderiza o resultado em Base64 estável para iOS
             try {
                 const dataUrl = canvas.toDataURL('image/png');
                 fotoFinal.src = dataUrl;
@@ -186,7 +184,7 @@
                 resultadoDiv.style.display = 'block';
                 resultadoDiv.scrollIntoView({ behavior: 'smooth' });
             } catch (e) {
-                logErro.innerHTML = "Erro ao processar imagem no iOS: " + e.message;
+                logErro.innerHTML = "Erro ao processar imagem: " + e.message;
             }
         });
     </script>
