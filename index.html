@@ -38,33 +38,84 @@
             z-index: 1;
         }
 
-        /* Moldura gerada nativamente apenas por CSS */
-        #moldura-visual {
+        /* --- DECORAÇÃO JUNINA FEITA 100% EM CSS --- */
+        #decoracao-overlay {
             position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
             z-index: 10;
             pointer-events: none;
-            border: 18px solid #f57c00; 
-            box-shadow: inset 0 0 0 4px #ffeb3b; 
         }
 
-        .tag-topo {
+        /* Varal de Bandeirinhas Coloridas no Topo */
+        .varal {
             position: absolute;
-            top: 25px;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 10px;
+        }
+        .bandeirinha {
+            width: 25px;
+            height: 35px;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%);
+        }
+        .b1 { background: #d32f2f; }
+        .b2 { background: #ffeb3b; }
+        .b3 { background: #00e676; }
+        .b4 { background: #29b6f6; }
+        .b5 { background: #ff7043; }
+
+        /* Placa com o Nome da Festa */
+        .placa-festa {
+            position: absolute;
+            top: 55px;
             left: 50%;
             transform: translateX(-50%);
-            background: #d32f2f;
-            color: #fff;
-            padding: 6px 14px;
+            background: #baf310;
+            background-image: linear-gradient(135deg, #8bc34a, #afb42b);
+            color: #d32f2f;
+            padding: 10px 18px;
             font-weight: bold;
-            font-size: 12px;
-            border-radius: 6px;
-            z-index: 12;
+            font-size: 14px;
+            border-radius: 10px;
+            border: 3px dashed #d32f2f;
             white-space: nowrap;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-            border: 2px solid #ffeb3b;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Cerquinha de Madeira Caipira na Base */
+        .cerca-base {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background-color: transparent;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 5px;
+        }
+        .madeira {
+            width: 18px;
+            height: 100%;
+            background: #8d6e63;
+            border: 2px solid #5d4037;
+            border-radius: 4px 4px 0 0;
+            clip-path: polygon(0% 25%, 50% 0%, 100% 25%, 100% 100%, 0% 100%);
+        }
+        .viga-horizontal {
+            position: absolute;
+            bottom: 12px;
+            left: 0;
+            width: 100%;
+            height: 12px;
+            background: #795548;
+            border-top: 2px solid #5d4037;
+            border-bottom: 2px solid #5d4037;
         }
 
         button {
@@ -80,43 +131,13 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
             -webkit-appearance: none;
         }
-
         button:hover { background-color: #e64a19; }
         button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
         #canvas { display: none; }
-
-        #resultado {
-            margin-top: 25px;
-            display: none;
-        }
-
-        #foto-final {
-            width: 100%;
-            max-width: 400px;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-        }
-
-        .aviso-salvar {
-            font-size: 14px;
-            color: #555;
-            margin-top: 10px;
-            padding: 0 10px;
-            line-height: 1.4;
-        }
-
-        #painel-status {
-            background-color: #ffebee;
-            color: #c62828;
-            font-size: 14px;
-            margin: 15px auto 0 auto;
-            font-weight: bold;
-            padding: 10px;
-            border-radius: 8px;
-            max-width: 400px;
-            border: 1px solid #ef9a9a;
-        }
+        #resultado { margin-top: 25px; display: none; }
+        #foto-final { width: 100%; max-width: 400px; border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
+        .aviso-salvar { font-size: 14px; color: #555; margin-top: 10px; padding: 0 10px; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -126,20 +147,42 @@
 
     <div id="camera-container">
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
-        <div class="tag-topo">6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO</div>
-        <div id="moldura-visual"></div>
+        
+        <!-- Elementos caipiras virtuais ativos em tempo real na tela -->
+        <div id="decoracao-overlay">
+            <div class="varal">
+                <div class="bandeirinha b1"></div>
+                <div class="bandeirinha b2"></div>
+                <div class="bandeirinha b3"></div>
+                <div class="bandeirinha b4"></div>
+                <div class="bandeirinha b5"></div>
+                <div class="bandeirinha b1"></div>
+                <div class="bandeirinha b2"></div>
+                <div class="bandeirinha b3"></div>
+            </div>
+            
+            <div class="placa-festa">6ª EDIÇÃO 🌽 ARRAIÁ DA EMILIANO MANOJO</div>
+            
+            <div class="cerca-base">
+                <div class="viga-horizontal"></div>
+                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
+                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
+                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
+                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
+                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
+            </div>
+        </div>
     </div>
 
     <button id="tirar-foto" disabled>📸 Abrindo câmera...</button>
-    <div id="painel-status">Status: Inicializando sistema...</div>
 
     <canvas id="canvas"></canvas>
 
     <div id="resultado">
         <h3>Sua foto ficou linda! 🌽</h3>
         <img id="foto-final" src="" alt="Foto Junina Finalizada">
-        <p class="aviso-salvar">💡 Se o download direto falhar no iPhone, segure o dedo na foto e toque em "Salvar em Fotos".</p>
-        <a id="baixar-foto" download="festa-junina-emiliano-manojo.png"><button>💾 Baixar Foto</button></a>
+        <p class="aviso-salvar">💡 No iPhone, segure o dedo na foto e toque em "Salvar em Fotos" para guardar na galeria.</p>
+        <a id="baixar-foto" download="arraia-emiliano-manojo.png"><button>💾 Baixar Foto</button></a>
     </div>
 
     <script>
@@ -149,54 +192,27 @@
         const resultadoDiv = document.getElementById('resultado');
         const fotoFinal = document.getElementById('foto-final');
         const linkBaixar = document.getElementById('baixar-foto');
-        const painelStatus = document.getElementById('painel-status');
-
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-            painelStatus.innerHTML = "⚠️ ERRO: Câmeras de celular são bloqueadas em links comuns. Publique o site em um endereço seguro 'https://' para o sistema funcionar.";
-            painelStatus.style.backgroundColor = "#ffcdd2";
-        }
 
         async function iniciarCamera() {
-            const opcionais = [
-                { video: { facingMode: "user" }, audio: false },
-                { video: true, audio: false }
-            ];
-
-            let stream = null;
-            for (let config of opcionais) {
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia(config);
-                    if (stream) break;
-                } catch (e) {
-                    console.log("Alternando lente...", e);
-                }
-            }
-
-            if (stream) {
-                try {
-                    video.srcObject = stream;
-                    video.play();
-                    
-                    painelStatus.innerHTML = "✅ Sistema Pronto! Posicione o rosto no centro da moldura.";
-                    painelStatus.style.backgroundColor = "#e8f5e9";
-                    painelStatus.style.color = "#2e7d32";
-                    painelStatus.style.borderColor = "#a5d6a7";
-                    
-                    btnTirarFoto.disabled = false;
-                    btnTirarFoto.innerHTML = "📸 Tirar Foto!";
-                } catch (playErr) {
-                    painelStatus.innerHTML = "Erro de reprodução: " + playErr.message;
-                }
-            } else {
-                painelStatus.innerHTML = "⚠️ Câmera bloqueada. Ative as permissões de privacidade no seu navegador.";
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user" },
+                    audio: false
+                });
+                video.srcObject = stream;
+                await video.play();
+                btnTirarFoto.disabled = false;
+                btnTirarFoto.innerHTML = "📸 Tirar Foto!";
+            } catch (err) {
+                alert("Por favor, ative as permissões de câmera do navegador.");
             }
         }
 
         window.addEventListener('load', iniciarCamera);
 
         btnTirarFoto.addEventListener('click', () => {
-            const vw = video.videoWidth || video.clientWidth || 640;
-            const vh = video.videoHeight || video.clientHeight || 480;
+            const vw = video.videoWidth || 640;
+            const vh = video.videoHeight || 480;
 
             canvas.width = vw;
             canvas.height = vh;
@@ -204,53 +220,52 @@
 
             ctx.clearRect(0, 0, vw, vh);
 
-            // 1. Renderiza o rosto capturado da lente
+            // 1. Tira o print do rosto da pessoa
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Desenha a moldura geométrica diretamente por cima da foto
-            const espessuraBorda = Math.min(vw, vh) * 0.05;
-            
-            ctx.lineWidth = espessuraBorda;
-            ctx.strokeStyle = "#f57c00"; 
-            ctx.strokeRect(espessuraBorda / 2, espessuraBorda / 2, vw - espessuraBorda, vh - espessuraBorda);
+            // 2. O código carimba os elementos juninos matematicamente por cima da foto no download
+            // Desenha o Varal de Bandeirinhas
+            const qtdBands = 8;
+            const largBand = vw / qtdBands;
+            const altBand = vh * 0.07;
+            const cores = ["#d32f2f", "#ffeb3b", "#00e676", "#29b6f6", "#ff7043"];
 
-            ctx.lineWidth = espessuraBorda * 0.2;
-            ctx.strokeStyle = "#ffeb3b"; 
-            ctx.strokeRect(espessuraBorda + (ctx.lineWidth / 2), espessuraBorda + (ctx.lineWidth / 2), vw - (espessuraBorda * 2) - ctx.lineWidth, vh - (espessuraBorda * 2) - ctx.lineWidth);
+            for (let i = 0; i < qtdBands; i++) {
+                ctx.fillStyle = cores[i % cores.length];
+                ctx.beginPath();
+                ctx.moveTo(i * largBand, 10);
+                ctx.lineTo((i + 1) * largBand, 10);
+                ctx.lineTo((i + 1) * largBand, 10 + altBand);
+                ctx.lineTo((i + 0.5) * largBand, 10 + (altBand * 0.75));
+                ctx.lineTo(i * largBand, 10 + altBand);
+                ctx.closePath();
+                ctx.fill();
+            }
 
-            // Desenha a Placa de Texto Vermelha no topo
-            const larguraPlaca = vw * 0.75;
-            const alturaPlaca = vh * 0.07;
-            const xPlaca = (vw - larguraPlaca) / 2;
-            const yPlaca = vh * 0.06;
+            // Desenha a Placa do Letreiro Caipira
+            const largPlaca = vw * 0.85;
+            const altPlaca = vh * 0.08;
+            const xPlaca = (vw - largPlaca) / 2;
+            const yPlaca = vh * 0.12;
 
-            ctx.fillStyle = "#d32f2f"; 
-            ctx.fillRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
-            
+            ctx.fillStyle = "#afb42b";
+            ctx.fillRect(xPlaca, yPlaca, largPlaca, altPlaca);
             ctx.lineWidth = 3;
-            ctx.strokeStyle = "#ffeb3b";
-            ctx.strokeRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
+            ctx.strokeStyle = "#d32f2f";
+            ctx.setLineDash([6, 6]); // Linha tracejada caipira
+            ctx.strokeRect(xPlaca, yPlaca, largPlaca, altPlaca);
+            ctx.setLineDash([]); // Reseta estilo de linha
 
-            ctx.fillStyle = "#ffffff";
-            ctx.font = `bold ${Math.floor(alturaPlaca * 0.45)}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+            // Escreve o Nome da Festa na foto de download
+            ctx.fillStyle = "#d32f2f";
+            ctx.font = `bold ${Math.floor(altPlaca * 0.45)}px -apple-system, sans-serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText("6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO", vw / 2, yPlaca + (alturaPlaca / 2));
+            ctx.fillText("6ª EDIÇÃO 🌽 ARRAIÁ DA EMILIANO MANOJO", vw / 2, yPlaca + (altPlaca / 2));
 
-            // 3. Exporta o resultado fundido
-            try {
-                const dataUrl = canvas.toDataURL("image/png");
-                fotoFinal.src = dataUrl;
-                linkBaixar.href = dataUrl;
+            // Desenha a Cerquinha de Madeira na Base
+            const altCerca = vh * 0.10;
+            const yCerca = vh - altCerca;
 
-                resultadoDiv.style.display = "block";
-                resultadoDiv.scrollIntoView({ behavior: "smooth", block: "center" });
-            } catch (e) {
-                painelStatus.innerHTML = "Erro ao processar imagem: " + e.message;
-                painelStatus.style.backgroundColor = "#ffcdd2";
-                painelStatus.style.color = "#c62828";
-            }
-        });
-    </script>
-</body>
-</html>
+            // Viga horizontal da cerca
+            ctx.fillStyle = "#795548";
