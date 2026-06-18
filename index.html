@@ -38,40 +38,34 @@
             z-index: 1;
         }
 
-        /* --- POSICIONAMENTO DOS ELEMENTOS INDIVIDUAIS --- */
-        .elemento-junino {
+        /* Moldura simulada via CSS por cima da câmera */
+        #moldura-visual {
             position: absolute;
-            pointer-events: none;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             z-index: 10;
+            pointer-events: none;
+            border: 18px solid #f57c00; /* Borda Laranja */
+            box-shadow: inset 0 0 0 4px #ffeb3b; /* Detalhe Amarelo */
         }
 
-        /* Letreiro Festa Junina centralizado no topo */
-        #mol-letreiro {
-            top: 15px;
+        /* Placa Junina gerada via CSS por cima do vídeo */
+        .tag-topo {
+            position: absolute;
+            top: 25px;
             left: 50%;
             transform: translateX(-50%);
-            width: 80%;
-        }
-
-        /* Varal de Bandeirinhas logo abaixo do letreiro */
-        #mol-bandeirinhas {
-            top: 75px;
-            left: 0;
-            width: 100%;
-        }
-
-        /* Cerca com Flores e Fogueira na Base */
-        #mol-cerca {
-            bottom: 0;
-            left: 0;
-            width: 100%;
-        }
-
-        /* Chapéu de Palha decorativo no canto superior direito */
-        #mol-chapeu {
-            top: 5px;
-            right: 5px;
-            width: 65px;
+            background: #d32f2f;
+            color: #fff;
+            padding: 6px 14px;
+            font-weight: bold;
+            font-size: 12px;
+            border-radius: 6px;
+            z-index: 12;
+            white-space: nowrap;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            border: 2px solid #ffeb3b;
         }
 
         button {
@@ -133,12 +127,8 @@
 
     <div id="camera-container">
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
-        
-        <!-- Elementos flutuando individualmente sobre o visor de vídeo -->
-        <img id="mol-letreiro" class="elemento-junino" src="" alt="Letreiro">
-        <img id="mol-bandeirinhas" class="elemento-junino" src="" alt="Bandeirinhas">
-        <img id="mol-chapeu" class="elemento-junino" src="" alt="Chapéu">
-        <img id="mol-cerca" class="elemento-junino" src="" alt="Cerca">
+        <div class="tag-topo">6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO</div>
+        <div id="moldura-visual"></div>
     </div>
 
     <button id="tirar-foto" disabled>📸 Abrindo câmera...</button>
@@ -162,19 +152,10 @@
         const linkBaixar = document.getElementById('baixar-foto');
         const painelStatus = document.getElementById('painel-status');
 
-        // Mapeando os elementos individuais da tela
-        const imgLetreiro = document.getElementById('mol-letreiro');
-        const imgBandeirinhas = document.getElementById('mol-bandeirinhas');
-        const imgChapeu = document.getElementById('mol-chapeu');
-        const imgCerca = document.getElementById('mol-cerca');
-
-        // --- 1. LISTA DE ELEMENTOS EM BASE64 ---
-        // Converta suas artes individuais em texto em base64 e cole dentro das aspas abaixo:
-        imgLetreiro.src = "data:image/png;base64,COLE_AQUI_O_LETREIRO_BASE64";
-        imgBandeirinhas.src = "data:image/png;base64,COLE_AQUI_AS_BANDEIRINHAS_BASE64";
-        imgChapeu.src = "data:image/png;base64,COLE_AQUI_O_CHAPEU_BASE64";
-        imgCerca.src = "data:image/png;base64,COLE_AQUI_A_CERCA_E_FOGUEIRA_BASE64";
-        // ---------------------------------------
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            painelStatus.innerHTML = "⚠️ ERRO: Câmeras de celular são bloqueadas em links comuns. Publique o site em um endereço seguro 'https://' para o sistema funcionar.";
+            painelStatus.style.backgroundColor = "#ffcdd2";
+        }
 
         async function iniciarCamera() {
             const opcionais = [
@@ -188,7 +169,7 @@
                     stream = await navigator.mediaDevices.getUserMedia(config);
                     if (stream) break;
                 } catch (e) {
-                    console.log("Alternando foco...", e);
+                    console.log("Alternando lente...", e);
                 }
             }
 
@@ -197,7 +178,7 @@
                     video.srcObject = stream;
                     video.play();
                     
-                    painelStatus.innerHTML = "✅ Pronto! Os elementos juninos estão fixados sobre o visor.";
+                    painelStatus.innerHTML = "✅ Sistema Pronto! Posicione o rosto no centro da moldura.";
                     painelStatus.style.backgroundColor = "#e8f5e9";
                     painelStatus.style.color = "#2e7d32";
                     painelStatus.style.borderColor = "#a5d6a7";
@@ -205,10 +186,10 @@
                     btnTirarFoto.disabled = false;
                     btnTirarFoto.innerHTML = "📸 Tirar Foto!";
                 } catch (playErr) {
-                    painelStatus.innerHTML = "Erro de vídeo: " + playErr.message;
+                    painelStatus.innerHTML = "Erro de reprodução: " + playErr.message;
                 }
             } else {
-                painelStatus.innerHTML = "⚠️ Ative as permissões de câmera do seu dispositivo.";
+                painelStatus.innerHTML = "⚠️ Câmera bloqueada. Ative as permissões de privacidade no seu navegador.";
             }
         }
 
@@ -218,44 +199,50 @@
             const vw = video.videoWidth || video.clientWidth || 640;
             const vh = video.videoHeight || video.clientHeight || 480;
 
-            // Define o canvas para o tamanho nativo do sensor da câmera do celular (Download sem perdas)
+            // Define o canvas para o tamanho nativo do sensor da câmera do celular
             canvas.width = vw;
             canvas.height = vh;
             const ctx = canvas.getContext('2d');
 
             ctx.clearRect(0, 0, vw, vh);
 
-            // 1. Tira a foto do rosto
+            // 1. Renderiza o rosto da pessoa capturado do sensor (Camada de baixo)
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Funde e carimba os elementos na foto do download respeitando as posições da tela
-            // Letreiro (80% da largura, no topo)
-            if (imgLetreiro.complete && imgLetreiro.naturalWidth > 0) {
-                let larg = vw * 0.80;
-                let alt = (imgLetreiro.naturalHeight / imgLetreiro.naturalWidth) * larg;
-                ctx.drawImage(imgLetreiro, (vw - larg) / 2, vh * 0.03, larg, alt);
-            }
+            // 2. Cria e carimba a moldura junina por código diretamente por cima da foto (Camada de cima)
+            const espessuraBorda = Math.min(vw, vh) * 0.05;
+            
+            // Desenha a borda principal laranja
+            ctx.lineWidth = espessuraBorda;
+            ctx.strokeStyle = "#f57c00"; 
+            ctx.strokeRect(espessuraBorda / 2, espessuraBorda / 2, vw - espessuraBorda, vh - espessuraBorda);
 
-            // Bandeirinhas (100% da largura, um pouco abaixo do letreiro)
-            if (imgBandeirinhas.complete && imgBandeirinhas.naturalWidth > 0) {
-                let alt = (imgBandeirinhas.naturalHeight / imgBandeirinhas.naturalWidth) * vw;
-                ctx.drawImage(imgBandeirinhas, 0, vh * 0.15, vw, alt);
-            }
+            // Desenha o friso interno amarelo
+            ctx.lineWidth = espessuraBorda * 0.2;
+            ctx.strokeStyle = "#ffeb3b"; 
+            ctx.strokeRect(espessuraBorda + (ctx.lineWidth / 2), espessuraBorda + (ctx.lineWidth / 2), vw - (espessuraBorda * 2) - ctx.lineWidth, vh - (espessuraBorda * 2) - ctx.lineWidth);
 
-            // Chapéu (Canto superior direito)
-            if (imgChapeu.complete && imgChapeu.naturalWidth > 0) {
-                let larg = vw * 0.16;
-                let alt = (imgChapeu.naturalHeight / imgChapeu.naturalWidth) * larg;
-                ctx.drawImage(imgChapeu, vw - larg - 10, vh * 0.01, larg, alt);
-            }
+            // Desenha a Placa de Texto Vermelha no topo
+            const larguraPlaca = vw * 0.75;
+            const alturaPlaca = vh * 0.07;
+            const xPlaca = (vw - larguraPlaca) / 2;
+            const yPlaca = vh * 0.06;
 
-            // Cerca com Fogueira (100% da largura, cravada na base inferior)
-            if (imgCerca.complete && imgCerca.naturalWidth > 0) {
-                let alt = (imgCerca.naturalHeight / imgCerca.naturalWidth) * vw;
-                ctx.drawImage(imgCerca, 0, vh - alt, vw, alt);
-            }
+            ctx.fillStyle = "#d32f2f"; 
+            ctx.fillRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
+            
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#ffeb3b";
+            ctx.strokeRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
 
-            // 3. Exporta para o resultado final
+            // Adiciona o texto adaptado para a resolução do download
+            ctx.fillStyle = "#ffffff";
+            ctx.font = `bold ${Math.floor(alturaPlaca * 0.45)}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO", vw / 2, yPlaca + (alturaPlaca / 2));
+
+            // 3. Junta as duas camadas e gera o link final estável para iPhone e Android
             try {
                 const dataUrl = canvas.toDataURL("image/png");
                 fotoFinal.src = dataUrl;
@@ -264,7 +251,9 @@
                 resultadoDiv.style.display = "block";
                 resultadoDiv.scrollIntoView({ behavior: "smooth", block: "center" });
             } catch (e) {
-                painelStatus.innerHTML = "Erro de buffer: " + e.message;
+                painelStatus.innerHTML = "Erro ao processar imagem: " + e.message;
+                painelStatus.style.backgroundColor = "#ffcdd2";
+                painelStatus.style.color = "#c62828";
             }
         });
     </script>
