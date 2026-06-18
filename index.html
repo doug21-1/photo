@@ -28,7 +28,6 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
 
-        /* O vídeo ocupa o fundo com z-index menor */
         #video {
             position: absolute;
             top: 0;
@@ -40,18 +39,32 @@
             z-index: 1;
         }
 
-        /* SOLUÇÃO PARA IPHONE: A moldura vira um background CSS para não travar a câmera atrás */
-        #moldura-overlay {
+        #moldura-visual {
             position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
             z-index: 10;
             pointer-events: none;
-            background-image: url('./borda.png?v=2');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            border: 18px solid #f57c00; 
+            box-shadow: inset 0 0 0 5px #ffeb3b; 
+        }
+
+        .tag-topo {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #d32f2f;
+            color: #fff;
+            padding: 6px 14px;
+            font-weight: bold;
+            font-size: 13px;
+            border-radius: 6px;
+            z-index: 12;
+            white-space: nowrap;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            border: 2px solid #ffeb3b;
         }
 
         button {
@@ -85,7 +98,7 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
 
-        .aviso-ios {
+        .aviso-salvar {
             font-size: 14px;
             color: #555;
             margin-top: 10px;
@@ -109,8 +122,8 @@
 
     <div id="camera-container">
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
-        <!-- Removida a tag img que bloqueia o iOS; inserida div de cobertura -->
-        <div id="moldura-overlay"></div>
+        <div class="tag-topo">6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO</div>
+        <div id="moldura-visual"></div>
     </div>
 
     <button id="tirar-foto" disabled>📸 Tirar Foto!</button>
@@ -120,13 +133,11 @@
 
     <div id="resultado">
         <h3>Sua foto ficou linda! 🌽</h3>
+        <!-- A tag de imagem final que exibirá a junção perfeita da foto com a moldura -->
         <img id="foto-final" src="" alt="Foto Junina Finalizada">
-        <p class="aviso-ios">💡 <b>No iPhone:</b> Toque e segure o dedo em cima da foto para clicar em <b>"Salvar em Fotos"</b>.</p>
+        <p class="aviso-salvar">💡 Se o download automático falhar, segure o dedo em cima da foto para salvá-la direto na sua galeria.</p>
         <a id="baixar-foto" download="festa-junina-emiliano-manojo.png"><button>💾 Baixar Foto</button></a>
     </div>
-
-    <!-- Objeto de imagem fantasma carregado em memória apenas para a fusão do Canvas JavaScript -->
-    <img id="borda-hidden" src="./borda.png?v=2" style="display: none;">
 
     <script>
         const video = document.getElementById('video');
@@ -136,7 +147,8 @@
         const fotoFinal = document.getElementById('foto-final');
         const linkBaixar = document.getElementById('baixar-foto');
         const logErro = document.getElementById('log-erro');
-        const imgHidden = document.getElementById('borda-hidden');
+        
+        let imageCaptureTrack = null;
 
         if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
             logErro.innerHTML = "⚠️ Atenção: A câmera só funcionará se o site for publicado em um link seguro 'https://'.";
@@ -145,11 +157,19 @@
         async function iniciarCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user" },
+                    video: { 
+                        facingMode: "user",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
                     audio: false
                 });
+                
                 video.srcObject = stream;
                 await video.play();
+                
+                // Armazena a faixa de vídeo para captura direta de frames (Independente do Canvas)
+                imageCaptureTrack = stream.getVideoTracks()[0];
                 btnTirarFoto.disabled = false;
             } catch (err) {
                 console.error(err);
@@ -162,59 +182,82 @@
             iniciarCamera();
         });
 
-        btnTirarFoto.addEventListener('click', () => {
-            const vw = video.videoWidth || 640;
-            const vh = video.videoHeight || 480;
+        // Evento de clique unificado usando ImageGrab assíncrono para ignorar a trava de segurança mobile
+        btnTirarFoto.addEventListener('click', async () => {
+            try {
+                // Caso o navegador suporte a API de Captura Direta por Frame do Sensor (Android/Chrome recente)
+                if (window.ImageCapture && imageCaptureTrack) {
+                    const capture = new ImageCapture(imageCaptureTrack);
+                    const bitmap = await capture.grabFrame();
+                    processarFoto(bitmap, bitmap.width, bitmap.height);
+                } else {
+                    // Fallback adaptado para o Safari do iPhone usando congelamento instantâneo do buffer
+                    const vw = video.videoWidth || 640;
+                    const vh = video.videoHeight || 480;
+                    processarFoto(video, vw, vh);
+                }
+            } catch (err) {
+                console.error("Falha no método principal, tentando alternativa...", err);
+                const vw = video.videoWidth || 640;
+                const vh = video.videoHeight || 480;
+                processarFoto(video, vw, vh);
+            }
+        });
 
-            // Garante o tamanho exato nativo da captura para o download
+        function processarFoto(origem, vw, vh) {
+            // Define o canvas para o tamanho nativo do sensor da câmera do celular
             canvas.width = vw;
             canvas.height = vh;
-
             const ctx = canvas.getContext('2d');
 
-            // 1. Renderiza o feed de vídeo primeiro
-            ctx.drawImage(video, 0, 0, vw, vh);
+            // Limpa o canvas antes do desenho para evitar conflitos de cache de cor
+            ctx.clearRect(0, 0, vw, vh);
 
-            // 2. Sobrepõe a imagem na memória mantendo a proporção exata da foto original
-            if (imgHidden.complete && imgHidden.naturalWidth > 0) {
-                const fitaMoldura = imgHidden.naturalWidth / imgHidden.naturalHeight;
-                const fitaCanvas = vw / vh;
-                let dWidth, dHeight, dx, dy;
+            // 1. Pinta o rosto da pessoa capturado do sensor
+            ctx.drawImage(origem, 0, 0, vw, vh);
 
-                if (fitaMoldura > fitaCanvas) {
-                    dHeight = vh;
-                    dWidth = vh * fitaMoldura;
-                    dx = (vw - dWidth) / 2;
-                    dy = 0;
-                } else {
-                    dWidth = vw;
-                    dHeight = vw / fitaMoldura;
-                    dx = 0;
-                    dy = (vh - dHeight) / 2;
-                }
-                ctx.drawImage(imgHidden, dx, dy, dWidth, dHeight);
-            }
+            // 2. Desenha a moldura geométrica por cima da foto de forma síncrona
+            const espessuraBorda = Math.min(vw, vh) * 0.05;
+            ctx.lineWidth = espessuraBorda;
+            ctx.strokeStyle = "#f57c00";
+            ctx.strokeRect(espessuraBorda / 2, espessuraBorda / 2, vw - espessuraBorda, vh - espessuraBorda);
 
-            // 3. Exporta mantendo a mesma resolução nativa
+            ctx.lineWidth = espessuraBorda * 0.2;
+            ctx.strokeStyle = "#ffeb3b";
+            ctx.strokeRect(espessuraBorda + (ctx.lineWidth / 2), espessuraBorda + (ctx.lineWidth / 2), vw - (espessuraBorda * 2) - ctx.lineWidth, vh - (espessuraBorda * 2) - ctx.lineWidth);
+
+            // Placa do Letreiro Festivo
+            const larguraPlaca = vw * 0.75;
+            const alturaPlaca = vh * 0.07;
+            const xPlaca = (vw - larguraPlaca) / 2;
+            const yPlaca = vh * 0.06;
+
+            ctx.fillStyle = "#d32f2f";
+            ctx.fillRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
+            
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#ffeb3b";
+            ctx.strokeRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = `bold ${Math.floor(alturaPlaca * 0.45)}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO", vw / 2, yPlaca + (alturaPlaca / 2));
+
+            // 3. Converte os dados brutos e atribui o link de download seguro
             try {
                 const dataUrl = canvas.toDataURL("image/png");
                 fotoFinal.src = dataUrl;
                 linkBaixar.href = dataUrl;
 
                 resultadoDiv.style.display = "block";
-
-                setTimeout(() => {
-                    resultadoDiv.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center"
-                    });
-                }, 200);
-
-            } catch (err) {
-                console.error(err);
-                logErro.innerHTML = "Erro ao gerar a foto. Tente novamente.";
+                resultadoDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch (e) {
+                console.error(e);
+                logErro.innerHTML = "Erro de buffer de segurança do Canvas. Verifique se o site está rodando em HTTPS público.";
             }
-        });
+        }
     </script>
 </body>
 </html>
