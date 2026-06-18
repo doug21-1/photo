@@ -38,15 +38,40 @@
             z-index: 1;
         }
 
-        /* Camada CSS: Força a imagem borda.png a cobrir o visor por cima da lente */
-        #moldura-oficial {
+        /* --- POSICIONAMENTO DOS ELEMENTOS INDIVIDUAIS --- */
+        .elemento-junino {
             position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
             pointer-events: none;
-            object-fit: cover;
+            z-index: 10;
+        }
+
+        /* Letreiro Festa Junina centralizado no topo */
+        #mol-letreiro {
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+        }
+
+        /* Varal de Bandeirinhas logo abaixo do letreiro */
+        #mol-bandeirinhas {
+            top: 75px;
+            left: 0;
+            width: 100%;
+        }
+
+        /* Cerca com Flores e Fogueira na Base */
+        #mol-cerca {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        /* Chapéu de Palha decorativo no canto superior direito */
+        #mol-chapeu {
+            top: 5px;
+            right: 5px;
+            width: 65px;
         }
 
         button {
@@ -108,8 +133,12 @@
 
     <div id="camera-container">
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
-        <!-- A imagem local é chamada quebrando o cache do navegador mobile -->
-        <img id="moldura-oficial" src="./borda.png?v=3" alt="Moldura Junina">
+        
+        <!-- Elementos flutuando individualmente sobre o visor de vídeo -->
+        <img id="mol-letreiro" class="elemento-junino" src="" alt="Letreiro">
+        <img id="mol-bandeirinhas" class="elemento-junino" src="" alt="Bandeirinhas">
+        <img id="mol-chapeu" class="elemento-junino" src="" alt="Chapéu">
+        <img id="mol-cerca" class="elemento-junino" src="" alt="Cerca">
     </div>
 
     <button id="tirar-foto" disabled>📸 Abrindo câmera...</button>
@@ -132,12 +161,20 @@
         const fotoFinal = document.getElementById('foto-final');
         const linkBaixar = document.getElementById('baixar-foto');
         const painelStatus = document.getElementById('painel-status');
-        const imgMoldura = document.getElementById('moldura-oficial');
 
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-            painelStatus.innerHTML = "⚠️ ERRO: Imagens locais e câmera são bloqueadas sem HTTPS. Publique o site em um link seguro para carregar a borda.";
-            painelStatus.style.backgroundColor = "#ffcdd2";
-        }
+        // Mapeando os elementos individuais da tela
+        const imgLetreiro = document.getElementById('mol-letreiro');
+        const imgBandeirinhas = document.getElementById('mol-bandeirinhas');
+        const imgChapeu = document.getElementById('mol-chapeu');
+        const imgCerca = document.getElementById('mol-cerca');
+
+        // --- 1. LISTA DE ELEMENTOS EM BASE64 ---
+        // Converta suas artes individuais em texto em base64 e cole dentro das aspas abaixo:
+        imgLetreiro.src = "data:image/png;base64,COLE_AQUI_O_LETREIRO_BASE64";
+        imgBandeirinhas.src = "data:image/png;base64,COLE_AQUI_AS_BANDEIRINHAS_BASE64";
+        imgChapeu.src = "data:image/png;base64,COLE_AQUI_O_CHAPEU_BASE64";
+        imgCerca.src = "data:image/png;base64,COLE_AQUI_A_CERCA_E_FOGUEIRA_BASE64";
+        // ---------------------------------------
 
         async function iniciarCamera() {
             const opcionais = [
@@ -151,7 +188,7 @@
                     stream = await navigator.mediaDevices.getUserMedia(config);
                     if (stream) break;
                 } catch (e) {
-                    console.log("Alternando lente...", e);
+                    console.log("Alternando foco...", e);
                 }
             }
 
@@ -160,7 +197,7 @@
                     video.srcObject = stream;
                     video.play();
                     
-                    painelStatus.innerHTML = "✅ Sistema Pronto! Tirar foto carregará a moldura de forma síncrona.";
+                    painelStatus.innerHTML = "✅ Pronto! Os elementos juninos estão fixados sobre o visor.";
                     painelStatus.style.backgroundColor = "#e8f5e9";
                     painelStatus.style.color = "#2e7d32";
                     painelStatus.style.borderColor = "#a5d6a7";
@@ -168,10 +205,10 @@
                     btnTirarFoto.disabled = false;
                     btnTirarFoto.innerHTML = "📸 Tirar Foto!";
                 } catch (playErr) {
-                    painelStatus.innerHTML = "Erro de reprodução: " + playErr.message;
+                    painelStatus.innerHTML = "Erro de vídeo: " + playErr.message;
                 }
             } else {
-                painelStatus.innerHTML = "⚠️ Câmera bloqueada. Ative as permissões do seu navegador.";
+                painelStatus.innerHTML = "⚠️ Ative as permissões de câmera do seu dispositivo.";
             }
         }
 
@@ -181,37 +218,44 @@
             const vw = video.videoWidth || video.clientWidth || 640;
             const vh = video.videoHeight || video.clientHeight || 480;
 
-            // Define o tamanho final idêntico ao tamanho original do seu sensor
+            // Define o canvas para o tamanho nativo do sensor da câmera do celular (Download sem perdas)
             canvas.width = vw;
             canvas.height = vh;
             const ctx = canvas.getContext('2d');
 
             ctx.clearRect(0, 0, vw, vh);
 
-            // 1. Renderiza a foto tirada (Camada de baixo)
+            // 1. Tira a foto do rosto
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Sobrepõe a imagem 'borda.png' ajustando as proporções nativas no arquivo final
-            if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
-                const fitaMoldura = imgMoldura.naturalWidth / imgMoldura.naturalHeight;
-                const fitaCanvas = vw / vh;
-                let dWidth, dHeight, dx, dy;
-
-                if (fitaMoldura > fitaCanvas) {
-                    dHeight = vh;
-                    dWidth = vh * fitaMoldura;
-                    dx = (vw - dWidth) / 2;
-                    dy = 0;
-                } else {
-                    dWidth = vw;
-                    dHeight = vw / fitaMoldura;
-                    dx = 0;
-                    dy = (vh - dHeight) / 2;
-                }
-                ctx.drawImage(imgMoldura, dx, dy, dWidth, dHeight);
+            // 2. Funde e carimba os elementos na foto do download respeitando as posições da tela
+            // Letreiro (80% da largura, no topo)
+            if (imgLetreiro.complete && imgLetreiro.naturalWidth > 0) {
+                let larg = vw * 0.80;
+                let alt = (imgLetreiro.naturalHeight / imgLetreiro.naturalWidth) * larg;
+                ctx.drawImage(imgLetreiro, (vw - larg) / 2, vh * 0.03, larg, alt);
             }
 
-            // 3. Converte a fusão para exibição segura e download
+            // Bandeirinhas (100% da largura, um pouco abaixo do letreiro)
+            if (imgBandeirinhas.complete && imgBandeirinhas.naturalWidth > 0) {
+                let alt = (imgBandeirinhas.naturalHeight / imgBandeirinhas.naturalWidth) * vw;
+                ctx.drawImage(imgBandeirinhas, 0, vh * 0.15, vw, alt);
+            }
+
+            // Chapéu (Canto superior direito)
+            if (imgChapeu.complete && imgChapeu.naturalWidth > 0) {
+                let larg = vw * 0.16;
+                let alt = (imgChapeu.naturalHeight / imgChapeu.naturalWidth) * larg;
+                ctx.drawImage(imgChapeu, vw - larg - 10, vh * 0.01, larg, alt);
+            }
+
+            // Cerca com Fogueira (100% da largura, cravada na base inferior)
+            if (imgCerca.complete && imgCerca.naturalWidth > 0) {
+                let alt = (imgCerca.naturalHeight / imgCerca.naturalWidth) * vw;
+                ctx.drawImage(imgCerca, 0, vh - alt, vw, alt);
+            }
+
+            // 3. Exporta para o resultado final
             try {
                 const dataUrl = canvas.toDataURL("image/png");
                 fotoFinal.src = dataUrl;
@@ -220,9 +264,7 @@
                 resultadoDiv.style.display = "block";
                 resultadoDiv.scrollIntoView({ behavior: "smooth", block: "center" });
             } catch (e) {
-                painelStatus.innerHTML = "Erro de buffer ao processar arquivo: " + e.message;
-                painelStatus.style.backgroundColor = "#ffcdd2";
-                painelStatus.style.color = "#c62828";
+                painelStatus.innerHTML = "Erro de buffer: " + e.message;
             }
         });
     </script>
