@@ -38,34 +38,15 @@
             z-index: 1;
         }
 
-        /* CORREÇÃO VISUAL: Renderiza a borda junina ao redor do visor em tempo real */
-        #moldura-visual {
+        /* Camada CSS: Força a imagem borda.png a cobrir o visor por cima da lente */
+        #moldura-oficial {
             position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
             z-index: 10;
             pointer-events: none;
-            border: 18px solid #f57c00; /* Borda Junina Laranja */
-            box-shadow: inset 0 0 0 4px #ffeb3b; /* Friso Amarelo Interno */
-        }
-
-        /* Placa Junina centralizada no topo do visor */
-        .tag-topo {
-            position: absolute;
-            top: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #d32f2f;
-            color: #fff;
-            padding: 6px 14px;
-            font-weight: bold;
-            font-size: 12px;
-            border-radius: 6px;
-            z-index: 12;
-            white-space: nowrap;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-            border: 2px solid #ffeb3b;
+            object-fit: cover;
         }
 
         button {
@@ -127,9 +108,8 @@
 
     <div id="camera-container">
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
-        <!-- A Placa e a Borda agora possuem estilos fixos sobre a lente -->
-        <div class="tag-topo">6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO</div>
-        <div id="moldura-visual"></div>
+        <!-- A imagem local é chamada quebrando o cache do navegador mobile -->
+        <img id="moldura-oficial" src="./borda.png?v=3" alt="Moldura Junina">
     </div>
 
     <button id="tirar-foto" disabled>📸 Abrindo câmera...</button>
@@ -140,7 +120,7 @@
     <div id="resultado">
         <h3>Sua foto ficou linda! 🌽</h3>
         <img id="foto-final" src="" alt="Foto Junina Finalizada">
-        <p class="aviso-salvar">💡 Se o botão não funcionar no iPhone, segure o dedo em cima da foto e toque em "Salvar em Fotos".</p>
+        <p class="aviso-salvar">💡 Se o download direto falhar no iPhone, segure o dedo na foto e toque em "Salvar em Fotos".</p>
         <a id="baixar-foto" download="festa-junina-emiliano-manojo.png"><button>💾 Baixar Foto</button></a>
     </div>
 
@@ -152,27 +132,26 @@
         const fotoFinal = document.getElementById('foto-final');
         const linkBaixar = document.getElementById('baixar-foto');
         const painelStatus = document.getElementById('painel-status');
+        const imgMoldura = document.getElementById('moldura-oficial');
 
         if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-            painelStatus.innerHTML = "⚠️ ERRO CRÍTICO: Câmeras de celular são BLOQUEADAS em links normais. Você precisa publicar esse site em um link seguro 'https://' para funcionar.";
+            painelStatus.innerHTML = "⚠️ ERRO: Imagens locais e câmera são bloqueadas sem HTTPS. Publique o site em um link seguro para carregar a borda.";
             painelStatus.style.backgroundColor = "#ffcdd2";
         }
 
         async function iniciarCamera() {
             const opcionais = [
                 { video: { facingMode: "user" }, audio: false },
-                { video: { facingMode: { exact: "user" } }, audio: false },
                 { video: true, audio: false }
             ];
 
             let stream = null;
-            
             for (let config of opcionais) {
                 try {
                     stream = await navigator.mediaDevices.getUserMedia(config);
                     if (stream) break;
                 } catch (e) {
-                    console.log("Tentando próxima configuração de lente...", e);
+                    console.log("Alternando lente...", e);
                 }
             }
 
@@ -181,7 +160,7 @@
                     video.srcObject = stream;
                     video.play();
                     
-                    painelStatus.innerHTML = "✅ Câmera ativada com sucesso! Sorria para a foto.";
+                    painelStatus.innerHTML = "✅ Sistema Pronto! Tirar foto carregará a moldura de forma síncrona.";
                     painelStatus.style.backgroundColor = "#e8f5e9";
                     painelStatus.style.color = "#2e7d32";
                     painelStatus.style.borderColor = "#a5d6a7";
@@ -189,10 +168,10 @@
                     btnTirarFoto.disabled = false;
                     btnTirarFoto.innerHTML = "📸 Tirar Foto!";
                 } catch (playErr) {
-                    painelStatus.innerHTML = "Erro ao dar play no vídeo: " + playErr.message;
+                    painelStatus.innerHTML = "Erro de reprodução: " + playErr.message;
                 }
             } else {
-                painelStatus.innerHTML = "⚠️ Não foi possível acessar a câmera. Certifique-se de dar permissão de acesso à câmera nas configurações do seu navegador.";
+                painelStatus.innerHTML = "⚠️ Câmera bloqueada. Ative as permissões do seu navegador.";
             }
         }
 
@@ -202,45 +181,37 @@
             const vw = video.videoWidth || video.clientWidth || 640;
             const vh = video.videoHeight || video.clientHeight || 480;
 
+            // Define o tamanho final idêntico ao tamanho original do seu sensor
             canvas.width = vw;
             canvas.height = vh;
             const ctx = canvas.getContext('2d');
 
             ctx.clearRect(0, 0, vw, vh);
 
-            // 1. Tira o print do rosto (Camada de baixo)
+            // 1. Renderiza a foto tirada (Camada de baixo)
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Desenha a moldura geométrica idêntica à da tela por cima da foto (Camada de cima)
-            const espessuraBorda = Math.min(vw, vh) * 0.05;
-            ctx.lineWidth = espessuraBorda;
-            ctx.strokeStyle = "#f57c00"; 
-            ctx.strokeRect(espessuraBorda / 2, espessuraBorda / 2, vw - espessuraBorda, vh - espessuraBorda);
+            // 2. Sobrepõe a imagem 'borda.png' ajustando as proporções nativas no arquivo final
+            if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
+                const fitaMoldura = imgMoldura.naturalWidth / imgMoldura.naturalHeight;
+                const fitaCanvas = vw / vh;
+                let dWidth, dHeight, dx, dy;
 
-            ctx.lineWidth = espessuraBorda * 0.2;
-            ctx.strokeStyle = "#ffeb3b"; 
-            ctx.strokeRect(espessuraBorda + (ctx.lineWidth / 2), espessuraBorda + (ctx.lineWidth / 2), vw - (espessuraBorda * 2) - ctx.lineWidth, vh - (espessuraBorda * 2) - ctx.lineWidth);
+                if (fitaMoldura > fitaCanvas) {
+                    dHeight = vh;
+                    dWidth = vh * fitaMoldura;
+                    dx = (vw - dWidth) / 2;
+                    dy = 0;
+                } else {
+                    dWidth = vw;
+                    dHeight = vw / fitaMoldura;
+                    dx = 0;
+                    dy = (vh - dHeight) / 2;
+                }
+                ctx.drawImage(imgMoldura, dx, dy, dWidth, dHeight);
+            }
 
-            // Desenha a Placa de Texto Junina na foto salva
-            const larguraPlaca = vw * 0.75;
-            const alturaPlaca = vh * 0.07;
-            const xPlaca = (vw - larguraPlaca) / 2;
-            const yPlaca = vh * 0.06;
-
-            ctx.fillStyle = "#d32f2f"; 
-            ctx.fillRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
-            
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = "#ffeb3b";
-            ctx.strokeRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
-
-            ctx.fillStyle = "#ffffff";
-            ctx.font = `bold ${Math.floor(alturaPlaca * 0.45)}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO", vw / 2, yPlaca + (alturaPlaca / 2));
-
-            // 3. Converte e exibe o resultado final com as duas camadas fundidas
+            // 3. Converte a fusão para exibição segura e download
             try {
                 const dataUrl = canvas.toDataURL("image/png");
                 fotoFinal.src = dataUrl;
@@ -249,7 +220,7 @@
                 resultadoDiv.style.display = "block";
                 resultadoDiv.scrollIntoView({ behavior: "smooth", block: "center" });
             } catch (e) {
-                painelStatus.innerHTML = "Erro de segurança ao mesclar imagem: " + e.message;
+                painelStatus.innerHTML = "Erro de buffer ao processar arquivo: " + e.message;
                 painelStatus.style.backgroundColor = "#ffcdd2";
                 painelStatus.style.color = "#c62828";
             }
