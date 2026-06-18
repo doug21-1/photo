@@ -28,7 +28,7 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
 
-        /* AJUSTE DE CAMADA: Câmera fica no fundo */
+        /* O vídeo ocupa o fundo com z-index menor */
         #video {
             position: absolute;
             top: 0;
@@ -37,19 +37,21 @@
             height: 100%;
             object-fit: cover;
             background-color: #000;
-            z-index: 1; 
+            z-index: 1;
         }
 
-        /* AJUSTE DE CAMADA: A borda fica obrigatoriamente por cima do vídeo */
-        #moldura-oficial {
+        /* SOLUÇÃO PARA IPHONE: A moldura vira um background CSS para não travar a câmera atrás */
+        #moldura-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
+            z-index: 10;
             pointer-events: none;
-            object-fit: cover;
-            z-index: 10; 
+            background-image: url('./borda.png?v=2');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         button {
@@ -106,10 +108,9 @@
     <p class="sub">Rua Emiliano Manojo - 6ª Edição</p>
 
     <div id="camera-container">
-        <!-- O vídeo entra primeiro na estrutura HTML -->
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
-        <!-- A imagem da moldura entra depois para garantir precedência visual -->
-        <img id="moldura-oficial" src="./borda.png?v=1" alt="Moldura Junina">
+        <!-- Removida a tag img que bloqueia o iOS; inserida div de cobertura -->
+        <div id="moldura-overlay"></div>
     </div>
 
     <button id="tirar-foto" disabled>📸 Tirar Foto!</button>
@@ -124,6 +125,9 @@
         <a id="baixar-foto" download="festa-junina-emiliano-manojo.png"><button>💾 Baixar Foto</button></a>
     </div>
 
+    <!-- Objeto de imagem fantasma carregado em memória apenas para a fusão do Canvas JavaScript -->
+    <img id="borda-hidden" src="./borda.png?v=2" style="display: none;">
+
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -132,7 +136,7 @@
         const fotoFinal = document.getElementById('foto-final');
         const linkBaixar = document.getElementById('baixar-foto');
         const logErro = document.getElementById('log-erro');
-        const imgMoldura = document.getElementById('moldura-oficial');
+        const imgHidden = document.getElementById('borda-hidden');
 
         if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
             logErro.innerHTML = "⚠️ Atenção: A câmera só funcionará se o site for publicado em um link seguro 'https://'.";
@@ -162,18 +166,18 @@
             const vw = video.videoWidth || 640;
             const vh = video.videoHeight || 480;
 
-            // Mantém o tamanho da foto baixada exatamente igual ao tamanho original gerado pelo celular
+            // Garante o tamanho exato nativo da captura para o download
             canvas.width = vw;
             canvas.height = vh;
 
             const ctx = canvas.getContext('2d');
 
-            // 1. Desenha a câmera primeiro (camada inferior da foto final)
+            // 1. Renderiza o feed de vídeo primeiro
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Desenha a moldura por cima (camada superior da foto final)
-            if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
-                const fitaMoldura = imgMoldura.naturalWidth / imgMoldura.naturalHeight;
+            // 2. Sobrepõe a imagem na memória mantendo a proporção exata da foto original
+            if (imgHidden.complete && imgHidden.naturalWidth > 0) {
+                const fitaMoldura = imgHidden.naturalWidth / imgHidden.naturalHeight;
                 const fitaCanvas = vw / vh;
                 let dWidth, dHeight, dx, dy;
 
@@ -188,10 +192,10 @@
                     dx = 0;
                     dy = (vh - dHeight) / 2;
                 }
-                ctx.drawImage(imgMoldura, dx, dy, dWidth, dHeight);
+                ctx.drawImage(imgHidden, dx, dy, dWidth, dHeight);
             }
 
-            // 3. Exporta o arquivo final mantendo a ordem correta das camadas
+            // 3. Exporta mantendo a mesma resolução nativa
             try {
                 const dataUrl = canvas.toDataURL("image/png");
                 fotoFinal.src = dataUrl;
