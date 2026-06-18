@@ -108,6 +108,7 @@
 
     <div id="camera-container">
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
+        <!-- Deixado apenas o elemento que recebe os dados em Base64 -->
         <img id="moldura-oficial" src="" alt="Moldura Junina">
     </div>
 
@@ -133,8 +134,11 @@
         const painelStatus = document.getElementById('painel-status');
         const imgMoldura = document.getElementById('moldura-oficial');
 
-        // Seu código Base64 oficial injetado de forma nativa e encurtada
-        imgMoldura.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAg0AAALpCAIAAAC/r4JXAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAP+lSURBVHheRPwFWNvZ8j+Op17c3TUhxAMJTnBLSIKEQAgkgbgSgeDuVrxI3UtLjZaWUuruttvudt337l7be3ev8x+6n+/vv8/rOc+cOXPmzNvmNQN0EYYoWz3VrickO2RTjaIh2AOij7LWRNvpoWy3FyhBjVxVlY4h30Mc61sS7maKdTVRHHdHWHOVcQ3XSkWy0REuAGr9dS7QGaEi2KoK1gmAlw2wHSLHbK9FbKjEWwrCt5WHbKrBWIrSFALWtInw7P2QjCOUoCyHaSoix5oduA5SGbi5DrVvCWBa2rRS5BZRgUIbcXo625KO2A0AQYSyF4RYwAsR4GwnRrgJnDfZlGAsAP3w7jDzkxnXNeye8sK3c0C3FyM0lqC3c0E2lyG1FIZsLgxBFIRuLAhGcgA0FgevI80fkByDYfv8HmLJ81wWmNyLXB8HwRjD8EHSvdWR7ILLcEdnuiBwPRKbrugDIcEekuCCSnddHQJILguaMSHRcR9x7xNivI8oWEWWHoNggqLaIiN9hhSBbIEhW6yBYIfCWCJwFArsdgd++LgBAg7dAYLavA2uBIMDUal3AgWCJIFojyNaISLt1tzEO64h3Wj8uwQGR5IRIcUKkOiNSXdeDSXVHpLkg0l0RaW6ITO8NGZ6制造人"; // Omitido por questões de tamanho da mensagem, mantenha o código inteiro que você gerou colado aqui dentro das aspas
+        // --- ⚠️ INSTRUÇÃO IMPORTANTE: COLE O SEU CÓDIGO AQUI ⚠️ ---
+        // Cole o código em Base64 completo que você gerou a partir da imagem da sua moldura.
+        // Lembre-se de manter o formato iniciando com "data:image/png;base64,..."
+        imgMoldura.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAg0AAALpCAIAAAC/r4JXAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAP+lSURBVHheRPwFWNvZ8j+Op17c3TUhxAMJTnBLSIKEQAgkgbgSgeDuVrxI3UtLjZaWUuruttvudt337l7be3ev8x+6n+/vv8/rOc+cOXPmzNvmNQN0EYYoWz3VrickO2RTjaIh2AOij7LWRNvpoWy3FyhBjVxVlY4h30Mc61sS7maKdTVRHHdHWHOVcQ3XSkWy0REuAGr9dS7QGaEi2KoK1gmAlw2wHSLHbK9FbKjEWwrCt5WHbKrBWIrSFALWtInw7P2QjCOUoCyHaSoix5oduA5SGbi5DrVvCWBa2rRS5BZRgUIbcXo625KO2A0AQYSyF4RYwAsR4GwnRrgJnDfZlGAsAP3w7jDzkxnXNeye8sK3c0C3FyM0lqC3c0E2lyG1FIZsLgxBFIRuLAhGcgA0FgevI80fkByDYfv8HmLJ81wWmNyLXB8HwRjD8EHSvdWR7ILLcEdnuiBwPRKbrugDIcEekuCCSnddHQJILguaMSHRcR9x7xNivI8oWEWWHoNggqLaIiN9hhSBbIEhW6yBYIfCWCJwFArsdgd++LgBAg7dAYLavA2uBIMDUal3AgWCJIFojyNaISLt1tzEO64h3Wj8uwQGR5IRIcUKkOiNSXdeDSXVHpLkg0l0RaW6ITO8NGZ6制造人"; 
+        // ---------------------------------------------------------
 
         async function iniciarCamera() {
             const opcionais = [
@@ -157,7 +161,7 @@
                     video.srcObject = stream;
                     video.play();
                     
-                    painelStatus.innerHTML = "✅ Sistema Pronto! A moldura oficial está ativa por cima.";
+                    painelStatus.innerHTML = "✅ Câmera e Moldura prontas de forma injetada!";
                     painelStatus.style.backgroundColor = "#e8f5e9";
                     painelStatus.style.color = "#2e7d32";
                     painelStatus.style.borderColor = "#a5d6a7";
@@ -187,7 +191,7 @@
             // 1. Renderiza o rosto (Camada de Baixo)
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Sobrepõe a imagem Base64 de forma proporcional (Camada de Cima)
+            // 2. Sobrepõe os dados da moldura Base64 de forma proporcional (Camada de Cima)
             if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
                 const fitaMoldura = imgMoldura.naturalWidth / imgMoldura.naturalHeight;
                 const fitaCanvas = vw / vh;
