@@ -28,21 +28,28 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
 
+        /* AJUSTE DE CAMADA: Câmera fica no fundo */
         #video {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
             background-color: #000;
+            z-index: 1; 
         }
 
+        /* AJUSTE DE CAMADA: A borda fica obrigatoriamente por cima do vídeo */
         #moldura-oficial {
             position: absolute;
-            inset: 0;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            z-index: 20;
             pointer-events: none;
             object-fit: cover;
+            z-index: 10; 
         }
 
         button {
@@ -99,7 +106,9 @@
     <p class="sub">Rua Emiliano Manojo - 6ª Edição</p>
 
     <div id="camera-container">
+        <!-- O vídeo entra primeiro na estrutura HTML -->
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
+        <!-- A imagem da moldura entra depois para garantir precedência visual -->
         <img id="moldura-oficial" src="./borda.png?v=1" alt="Moldura Junina">
     </div>
 
@@ -150,22 +159,20 @@
         });
 
         btnTirarFoto.addEventListener('click', () => {
-            // Pega o tamanho exato e real gerado pela câmera do dispositivo
             const vw = video.videoWidth || 640;
             const vh = video.videoHeight || 480;
 
-            // Define o tamanho do Canvas para ser IGUAL ao tamanho nativo capturado pela câmera
+            // Mantém o tamanho da foto baixada exatamente igual ao tamanho original gerado pelo celular
             canvas.width = vw;
             canvas.height = vh;
 
             const ctx = canvas.getContext('2d');
 
-            // 1. Desenha a imagem da câmera no tamanho original (sem distorções e sem cortes artificiais)
+            // 1. Desenha a câmera primeiro (camada inferior da foto final)
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Sobrepõe a moldura (borda.png) acompanhando proporcionalmente as dimensões originais da foto
+            // 2. Desenha a moldura por cima (camada superior da foto final)
             if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
-                // Aplica o comportamento de 'object-fit: cover' no desenho para que a moldura cubra o tamanho exato do feed
                 const fitaMoldura = imgMoldura.naturalWidth / imgMoldura.naturalHeight;
                 const fitaCanvas = vw / vh;
                 let dWidth, dHeight, dx, dy;
@@ -184,7 +191,7 @@
                 ctx.drawImage(imgMoldura, dx, dy, dWidth, dHeight);
             }
 
-            // 3. Exporta a foto no tamanho nativo exato
+            // 3. Exporta o arquivo final mantendo a ordem correta das camadas
             try {
                 const dataUrl = canvas.toDataURL("image/png");
                 fotoFinal.src = dataUrl;
