@@ -38,84 +38,33 @@
             z-index: 1;
         }
 
-        /* --- DECORAÇÃO JUNINA FEITA 100% EM CSS --- */
-        #decoracao-overlay {
+        /* --- POSICIONAMENTO DOS ELEMENTOS JUNINOS --- */
+        .elemento-junino {
             position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
             pointer-events: none;
+            z-index: 10;
         }
 
-        /* Varal de Bandeirinhas Coloridas no Topo */
-        .varal {
-            position: absolute;
-            top: 10px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            padding: 0 10px;
-        }
-        .bandeirinha {
-            width: 25px;
-            height: 35px;
-            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%);
-        }
-        .b1 { background: #d32f2f; }
-        .b2 { background: #ffeb3b; }
-        .b3 { background: #00e676; }
-        .b4 { background: #29b6f6; }
-        .b5 { background: #ff7043; }
-
-        /* Placa com o Nome da Festa */
-        .placa-festa {
-            position: absolute;
-            top: 55px;
+        /* Letreiro Oficial com o nome da rua e edição */
+        #mol-letreiro {
+            top: 15px;
             left: 50%;
             transform: translateX(-50%);
-            background: #baf310;
-            background-image: linear-gradient(135deg, #8bc34a, #afb42b);
-            color: #d32f2f;
-            padding: 10px 18px;
-            font-weight: bold;
-            font-size: 14px;
-            border-radius: 10px;
-            border: 3px dashed #d32f2f;
-            white-space: nowrap;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            width: 85%;
         }
 
-        /* Cerquinha de Madeira Caipira na Base */
-        .cerca-base {
-            position: absolute;
+        /* Varal de Bandeirinhas Coloridas */
+        #mol-bandeirinhas {
+            top: 75px;
+            left: 0;
+            width: 100%;
+        }
+
+        /* Cerca de Madeira com Fogueira na Base */
+        #mol-cerca {
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 50px;
-            background-color: transparent;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 5px;
-        }
-        .madeira {
-            width: 18px;
-            height: 100%;
-            background: #8d6e63;
-            border: 2px solid #5d4037;
-            border-radius: 4px 4px 0 0;
-            clip-path: polygon(0% 25%, 50% 0%, 100% 25%, 100% 100%, 0% 100%);
-        }
-        .viga-horizontal {
-            position: absolute;
-            bottom: 12px;
-            left: 0;
-            width: 100%;
-            height: 12px;
-            background: #795548;
-            border-top: 2px solid #5d4037;
-            border-bottom: 2px solid #5d4037;
         }
 
         button {
@@ -131,13 +80,31 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
             -webkit-appearance: none;
         }
+
         button:hover { background-color: #e64a19; }
         button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
         #canvas { display: none; }
-        #resultado { margin-top: 25px; display: none; }
-        #foto-final { width: 100%; max-width: 400px; border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
-        .aviso-salvar { font-size: 14px; color: #555; margin-top: 10px; padding: 0 10px; line-height: 1.4; }
+
+        #resultado {
+            margin-top: 25px;
+            display: none;
+        }
+
+        #foto-final {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .aviso-salvar {
+            font-size: 14px;
+            color: #555;
+            margin-top: 10px;
+            padding: 0 10px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -148,30 +115,10 @@
     <div id="camera-container">
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
         
-        <!-- Elementos caipiras virtuais ativos em tempo real na tela -->
-        <div id="decoracao-overlay">
-            <div class="varal">
-                <div class="bandeirinha b1"></div>
-                <div class="bandeirinha b2"></div>
-                <div class="bandeirinha b3"></div>
-                <div class="bandeirinha b4"></div>
-                <div class="bandeirinha b5"></div>
-                <div class="bandeirinha b1"></div>
-                <div class="bandeirinha b2"></div>
-                <div class="bandeirinha b3"></div>
-            </div>
-            
-            <div class="placa-festa">6ª EDIÇÃO 🌽 ARRAIÁ DA EMILIANO MANOJO</div>
-            
-            <div class="cerca-base">
-                <div class="viga-horizontal"></div>
-                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
-                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
-                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
-                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
-                <div class="madeira"></div><div class="madeira"></div><div class="madeira"></div>
-            </div>
-        </div>
+        <!-- Elementos hospedados online carregando automaticamente por cima da câmera -->
+        <img id="mol-letreiro" class="elemento-junino" src="https://ibb.co" alt="Letreiro">
+        <img id="mol-bandeirinhas" class="elemento-junino" src="https://ibb.co" alt="Bandeirinhas">
+        <img id="mol-cerca" class="elemento-junino" src="https://ibb.co" alt="Cerca">
     </div>
 
     <button id="tirar-foto" disabled>📸 Abrindo câmera...</button>
@@ -181,8 +128,8 @@
     <div id="resultado">
         <h3>Sua foto ficou linda! 🌽</h3>
         <img id="foto-final" src="" alt="Foto Junina Finalizada">
-        <p class="aviso-salvar">💡 No iPhone, segure o dedo na foto e toque em "Salvar em Fotos" para guardar na galeria.</p>
-        <a id="baixar-foto" download="arraia-emiliano-manojo.png"><button>💾 Baixar Foto</button></a>
+        <p class="aviso-salvar">💡 No iPhone, segure o dedo na foto acima e toque em "Salvar em Fotos" para guardar na galeria.</p>
+        <a id="baixar-foto" download="festa-junina-emiliano-manojo.png"><button>💾 Baixar Foto</button></a>
     </div>
 
     <script>
@@ -193,6 +140,11 @@
         const fotoFinal = document.getElementById('foto-final');
         const linkBaixar = document.getElementById('baixar-foto');
 
+        const imgLetreiro = document.getElementById('mol-letreiro');
+        const imgBandeirinhas = document.getElementById('mol-bandeirinhas');
+        const imgCerca = document.getElementById('mol-cerca');
+
+        // Inicializa a câmera respeitando a privacidade móvel
         async function iniciarCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -201,10 +153,11 @@
                 });
                 video.srcObject = stream;
                 await video.play();
+                
                 btnTirarFoto.disabled = false;
                 btnTirarFoto.innerHTML = "📸 Tirar Foto!";
             } catch (err) {
-                alert("Por favor, ative as permissões de câmera do navegador.");
+                alert("Por favor, garanta o acesso à câmera nas configurações do seu navegador.");
             }
         }
 
@@ -214,58 +167,48 @@
             const vw = video.videoWidth || 640;
             const vh = video.videoHeight || 480;
 
+            // Define o canvas para o tamanho nativo do sensor da câmera do celular (Download sem perdas)
             canvas.width = vw;
             canvas.height = vh;
             const ctx = canvas.getContext('2d');
 
             ctx.clearRect(0, 0, vw, vh);
 
-            // 1. Tira o print do rosto da pessoa
+            // 1. Carimba o rosto da pessoa (Camada de Baixo)
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. O código carimba os elementos juninos matematicamente por cima da foto no download
-            // Desenha o Varal de Bandeirinhas
-            const qtdBands = 8;
-            const largBand = vw / qtdBands;
-            const altBand = vh * 0.07;
-            const cores = ["#d32f2f", "#ffeb3b", "#00e676", "#29b6f6", "#ff7043"];
-
-            for (let i = 0; i < qtdBands; i++) {
-                ctx.fillStyle = cores[i % cores.length];
-                ctx.beginPath();
-                ctx.moveTo(i * largBand, 10);
-                ctx.lineTo((i + 1) * largBand, 10);
-                ctx.lineTo((i + 1) * largBand, 10 + altBand);
-                ctx.lineTo((i + 0.5) * largBand, 10 + (altBand * 0.75));
-                ctx.lineTo(i * largBand, 10 + altBand);
-                ctx.closePath();
-                ctx.fill();
+            // 2. Funde e sobrepõe os elementos juninos preservando as posições originais da tela (Camada Superior)
+            // Desenha o Letreiro Oficial
+            if (imgLetreiro.complete && imgLetreiro.naturalWidth > 0) {
+                let larg = vw * 0.85;
+                let alt = (imgLetreiro.naturalHeight / imgLetreiro.naturalWidth) * larg;
+                ctx.drawImage(imgLetreiro, (vw - larg) / 2, vh * 0.03, larg, alt);
             }
 
-            // Desenha a Placa do Letreiro Caipira
-            const largPlaca = vw * 0.85;
-            const altPlaca = vh * 0.08;
-            const xPlaca = (vw - largPlaca) / 2;
-            const yPlaca = vh * 0.12;
+            // Desenha as Bandeirinhas
+            if (imgBandeirinhas.complete && imgBandeirinhas.naturalWidth > 0) {
+                let alt = (imgBandeirinhas.naturalHeight / imgBandeirinhas.naturalWidth) * vw;
+                ctx.drawImage(imgBandeirinhas, 0, vh * 0.15, vw, alt);
+            }
 
-            ctx.fillStyle = "#afb42b";
-            ctx.fillRect(xPlaca, yPlaca, largPlaca, altPlaca);
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = "#d32f2f";
-            ctx.setLineDash([6, 6]); // Linha tracejada caipira
-            ctx.strokeRect(xPlaca, yPlaca, largPlaca, altPlaca);
-            ctx.setLineDash([]); // Reseta estilo de linha
+            // Desenha a Cerca com Fogueira cravada na base inferior
+            if (imgCerca.complete && imgCerca.naturalWidth > 0) {
+                let alt = (imgCerca.naturalHeight / imgCerca.naturalWidth) * vw;
+                ctx.drawImage(imgCerca, 0, vh - alt, vw, alt);
+            }
 
-            // Escreve o Nome da Festa na foto de download
-            ctx.fillStyle = "#d32f2f";
-            ctx.font = `bold ${Math.floor(altPlaca * 0.45)}px -apple-system, sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("6ª EDIÇÃO 🌽 ARRAIÁ DA EMILIANO MANOJO", vw / 2, yPlaca + (altPlaca / 2));
+            // 3. Exporta a foto unificada
+            try {
+                const dataUrl = canvas.toDataURL("image/png");
+                fotoFinal.src = dataUrl;
+                linkBaixar.href = dataUrl;
 
-            // Desenha a Cerquinha de Madeira na Base
-            const altCerca = vh * 0.10;
-            const yCerca = vh - altCerca;
-
-            // Viga horizontal da cerca
-            ctx.fillStyle = "#795548";
+                resultadoDiv.style.display = "block";
+                resultadoDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch (e) {
+                alert("Erro ao mesclar imagens. Garanta que o site esteja rodando em um link HTTPS seguro.");
+            }
+        });
+    </script>
+</body>
+</html>
