@@ -35,7 +35,7 @@
             background-color: #000;
         }
 
-        /* Exibição direta da moldura transparente */
+        /* Renderização direta da moldura sobre o vídeo */
         #moldura-oficial {
             position: absolute;
             top: 0;
@@ -45,6 +45,7 @@
             pointer-events: none;
             z-index: 10;
             object-fit: fill;
+            display: block;
         }
 
         button {
@@ -62,6 +63,7 @@
         }
 
         button:hover { background-color: #e64a19; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
         #canvas { display: none; }
 
@@ -101,10 +103,11 @@
 
     <div id="camera-container">
         <video id="video" autoplay playsinline muted></video>
+        <!-- A imagem puxa diretamente o arquivo local 'borda.png' -->
         <img id="moldura-oficial" src="borda.png" alt="Moldura Junina">
     </div>
 
-    <button id="tirar-foto">📸 Tirar Foto!</button>
+    <button id="tirar-foto" disabled>⌛ Carregando Moldura...</button>
     <div id="log-erro"></div>
 
     <canvas id="canvas"></canvas>
@@ -126,8 +129,27 @@
         const logErro = document.getElementById('log-erro');
         const imgMoldura = document.getElementById('moldura-oficial');
 
+        // Alerta de protocolo de segurança essencial
         if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
             logErro.innerHTML = "⚠️ Atenção: A câmera só funcionará se o site for publicado em um link seguro 'https://'.";
+        }
+
+        // Garante que o script espere a imagem borda.png carregar na memória do celular
+        imgMoldura.onload = function() {
+            btnTirarFoto.disabled = false;
+            btnTirarFoto.innerHTML = "📸 Tirar Foto!";
+        };
+
+        // Tratamento caso o arquivo borda.png não seja encontrado na pasta
+        imgMoldura.onerror = function() {
+            logErro.innerHTML = "⚠️ Erro crítico: O arquivo 'borda.png' não foi encontrado na mesma pasta do index.html ou está corrompido.";
+            btnTirarFoto.innerHTML = "Erro ao carregar moldura";
+        };
+
+        // Se a imagem já tiver carregado antes do script ler (cache), ativa o botão
+        if (imgMoldura.complete) {
+            btnTirarFoto.disabled = false;
+            btnTirarFoto.innerHTML = "📸 Tirar Foto!";
         }
 
         async function iniciarCamera() {
@@ -146,7 +168,7 @@
                 await video.play();
             } catch (err) {
                 console.error(err);
-                logErro.innerHTML = "Não foi possível acessar a câmera. Verifique se deu permissão de câmera no seu navegador.";
+                logErro.innerHTML = "Não foi possível acessar a câmera. Verifique as permissões do seu navegador.";
             }
         }
 
@@ -158,14 +180,15 @@
                 return;
             }
 
+            // Define o tamanho matemático exato do canvas baseado no vídeo
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
             
-            // 1. Desenha o rosto da pessoa
+            // 1. Captura a imagem da câmera de forma síncrona
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // 2. Desenha a moldura transparente por cima de forma normal
+            // 2. Sobrepõe a imagem borda.png perfeitamente dimensionada
             if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
                 context.drawImage(imgMoldura, 0, 0, canvas.width, canvas.height);
             }
@@ -178,7 +201,7 @@
                 resultadoDiv.style.display = 'block';
                 resultadoDiv.scrollIntoView({ behavior: 'smooth' });
             } catch (e) {
-                logErro.innerHTML = "Erro ao processar imagem: " + e.message;
+                logErro.innerHTML = "Erro ao processar imagem final: " + e.message;
             }
         });
     </script>
