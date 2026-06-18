@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Foto Junina - Emiliano Manojo</title>
+    <title>6ª Festa Junina - Rua Emiliano Manojo</title>
     <style>
         * { box-sizing: border-box; }
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             text-align: center;
             background-color: #f7ebd3;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
         }
-        h2 { color: #d32f2f; margin-bottom: 15px; font-weight: bold; }
+        h2 { color: #d32f2f; margin: 10px 0 5px 0; font-size: 22px; font-weight: bold; }
+        p.sub { color: #d84315; margin: 0 0 15px 0; font-weight: bold; font-size: 14px; }
         
         #camera-container {
             position: relative;
             width: 100%;
             max-width: 400px;
-            height: 500px;
+            aspect-ratio: 3 / 4; /* Proporção ideal de retrato para celular */
             margin: 0 auto;
             border-radius: 15px;
             overflow: hidden;
@@ -31,56 +32,34 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            background-color: #000;
         }
 
-        /* --- ELEMENTOS DA MOLDURA JUNINA CORRIGIDOS --- */
-        .elemento-moldura {
+        /* Moldura única cobrindo toda a área da câmera */
+        #moldura-oficial {
             position: absolute;
-            pointer-events: none;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Permite interações por trás da imagem */
             z-index: 10;
-        }
-
-        /* Letreiro Festa Junina centralizado no topo */
-        #mol-letreiro {
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 85%;
-        }
-
-        /* Varal de Bandeirinhas logo abaixo do letreiro */
-        #mol-bandeirinhas {
-            top: 70px;
-            left: 0;
-            width: 100%;
-        }
-
-        /* Cerca com Flores na Base */
-        #mol-cerca {
-            bottom: 0;
-            left: 0;
-            width: 100%;
-        }
-
-        /* Chapéu de Palha decorativo no canto */
-        #mol-chapeu {
-            top: 5px;
-            right: 5px;
-            width: 70px;
+            object-fit: fill;
         }
 
         button {
             background-color: #f57c00;
             color: white;
             border: none;
-            padding: 15px 35px;
+            padding: 15px 40px;
             font-size: 18px;
             border-radius: 50px;
             cursor: pointer;
             margin-top: 20px;
             font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            -webkit-appearance: none; /* Remove estilos padrão do iOS */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            -webkit-appearance: none;
+            transition: background 0.2s;
         }
 
         button:hover { background-color: #e64a19; }
@@ -88,7 +67,7 @@
         #canvas { display: none; }
 
         #resultado {
-            margin-top: 20px;
+            margin-top: 25px;
             display: none;
         }
 
@@ -99,39 +78,46 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
 
-        /* Instrução específica exigida para comportamento de salvamento no iPhone */
         .aviso-ios {
             font-size: 14px;
             color: #555;
-            margin-top: 8px;
+            margin-top: 10px;
+            padding: 0 10px;
+            line-height: 1.4;
+        }
+
+        #log-erro {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 12px;
+            font-weight: bold;
+            padding: 0 10px;
         }
     </style>
 </head>
 <body>
 
-    <h2>Arraiá Emiliano Manojo 🎉</h2>
+    <h2>Festa Junina 🎉</h2>
+    <p class="sub">Rua Emiliano Manojo - 6ª Edição</p>
 
     <div id="camera-container">
-        <!-- Correção iOS: Atributos 'autoplay', 'playsinline' e 'muted' obrigatórios juntos -->
+        <!-- 'playsinline' e 'muted' garantem estabilidade total no Safari do iPhone -->
         <video id="video" autoplay playsinline muted></video>
         
-        <!-- Elementos transparentes recortados do seu arquivo -->
-        <img id="mol-letreiro" class="elemento-moldura" src="festa-junina-letreiro.png" alt="Letreiro">
-        <img id="mol-bandeirinhas" class="elemento-moldura" src="bandeirinhas.png" alt="Bandeirinhas">
-        <img id="mol-chapeu" class="elemento-moldura" src="chapeu.png" alt="Chapéu">
-        <img id="mol-cerca" class="elemento-moldura" src="cerca-flores.png" alt="Cerca">
+        <!-- Sua moldura PNG transparente unificada que ficará sobre a câmera -->
+        <img id="moldura-oficial" src="moldura-junina.png" alt="Moldura Junina">
     </div>
 
     <button id="tirar-foto">📸 Tirar Foto!</button>
+    <div id="log-erro"></div>
 
     <canvas id="canvas"></canvas>
 
     <div id="resultado">
-        <h3>Olha a chuva! É verdade! 🌽</h3>
-        <img id="foto-final" src="" alt="Sua Foto Junina">
-        <br>
-        <p class="aviso-ios">💡 No iPhone, pressione e segure o dedo na imagem acima para <b>Salvar em Fotos</b>.</p>
-        <a id="baixar-foto" download="foto-festa-junina.png"><button>💾 Baixar Minha Foto</button></a>
+        <h3>Sua foto ficou linda! 🌽</h3>
+        <img id="foto-final" src="" alt="Foto Junina Finalizada">
+        <p class="aviso-ios">💡 <b>No iPhone:</b> Toque e segure o dedo em cima da foto para clicar em <b>"Salvar em Fotos"</b>.</p>
+        <a id="baixar-foto" download="festa-junina-emiliano-manojo.png"><button>💾 Baixar Foto</button></a>
     </div>
 
     <script>
@@ -141,81 +127,67 @@
         const resultadoDiv = document.getElementById('resultado');
         const fotoFinal = document.getElementById('foto-final');
         const linkBaixar = document.getElementById('baixar-foto');
+        const logErro = document.getElementById('log-erro');
+        const imgMoldura = document.getElementById('moldura-oficial');
 
-        const imgLetreiro = document.getElementById('mol-letreiro');
-        const imgBandeirinhas = document.getElementById('mol-bandeirinhas');
-        const imgChapeu = document.getElementById('mol-chapeu');
-        const imgCerca = document.getElementById('mol-cerca');
+        // Alerta de protocolo seguro obrigatório para câmeras mobile
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+            logErro.innerHTML = "⚠️ Atenção: A câmera só funcionará se o site for publicado em um link seguro 'https://'.";
+        }
 
-        // Configuração de restrição estrita para iOS aceitar a inicialização
-        const constraints = {
-            video: {
-                facingMode: "user",
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        };
+        // Inicialização da câmera limpa e compatível com iOS
+        async function iniciarCamera() {
+            const constraints = {
+                video: {
+                    facingMode: "user",
+                    width: { ideal: 1080 },
+                    height: { ideal: 1440 } // Proporção 3:4 casando com o container
+                },
+                audio: false
+            };
 
-        // Garante que o stream rode corretamente no ecossistema Apple
-        navigator.mediaDevices.getUserMedia(constraints)
-            .then((stream) => { 
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
-                // Força o play manual caso o iOS bloqueie o autoplay
-                video.play().catch(e => console.log("Autoplay bloqueado, aguardando clique."));
-            })
-            .catch((err) => { 
-                alert("Por favor, garanta o acesso à câmera nas configurações do seu Safari."); 
-            });
+                await video.play();
+            } catch (err) {
+                console.error(err);
+                logErro.innerHTML = "Não foi possível acessar a câmera. Verifique se o Safari possui permissão de câmera nos Ajustes do iPhone.";
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', iniciarCamera);
 
         btnTirarFoto.addEventListener('click', () => {
-            // Correção Safari: Verifica se o vídeo está pronto e com dimensões válidas
             if (video.videoWidth === 0 || video.videoHeight === 0) {
-                alert("A câmera ainda está carregando os frames. Tente novamente em um segundo.");
+                alert("Aguarde a câmera iniciar completamente.");
                 return;
             }
 
+            // Clona perfeitamente as dimensões do vídeo capturado
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
             
-            // 1. Renderiza o feed da câmera de forma síncrona
+            // 1. Desenha a foto tirada pela pessoa
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // 2. Renderiza as sobreposições calculando proporções originais
-            // Letreiro
-            if (imgLetreiro.complete) {
-                let letreiroLargura = canvas.width * 0.85;
-                let letreiroAltura = (imgLetreiro.naturalHeight / imgLetreiro.naturalWidth) * letreiroLargura;
-                context.drawImage(imgLetreiro, (canvas.width - letreiroLargura) / 2, 30, letreiroLargura, letreiroAltura);
+            // 2. Desenha a moldura por cima cobrindo toda a área de forma limpa e síncrona
+            if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
+                context.drawImage(imgMoldura, 0, 0, canvas.width, canvas.height);
             }
 
-            // Bandeirinhas
-            if (imgBandeirinhas.complete) {
-                let bandAltura = (imgBandeirinhas.naturalHeight / imgBandeirinhas.naturalWidth) * canvas.width;
-                context.drawImage(imgBandeirinhas, 0, 140, canvas.width, bandAltura);
+            // 3. Renderiza o resultado em Base64 estável para iOS
+            try {
+                const dataUrl = canvas.toDataURL('image/png');
+                fotoFinal.src = dataUrl;
+                linkBaixar.href = dataUrl;
+                
+                resultadoDiv.style.display = 'block';
+                resultadoDiv.scrollIntoView({ behavior: 'smooth' });
+            } catch (e) {
+                logErro.innerHTML = "Erro ao processar imagem no iOS: " + e.message;
             }
-
-            // Chapéu
-            if (imgChapeu.complete) {
-                let chapeuLargura = canvas.width * 0.18;
-                let chapeuAltura = (imgChapeu.naturalHeight / imgChapeu.naturalWidth) * chapeuLargura;
-                context.drawImage(imgChapeu, canvas.width - chapeuLargura - 10, 10, chapeuLargura, chapeuAltura);
-            }
-
-            // Cerca
-            if (imgCerca.complete) {
-                let cercaAltura = (imgCerca.naturalHeight / imgCerca.naturalWidth) * canvas.width;
-                context.drawImage(imgCerca, 0, canvas.height - cercaAltura, canvas.width, cercaAltura);
-            }
-
-            // 3. Converte para Base64 compatível com Safari
-            const dataUrl = canvas.toDataURL('image/png');
-            fotoFinal.src = dataUrl;
-            linkBaixar.href = dataUrl;
-            
-            resultadoDiv.style.display = 'block';
-            resultadoDiv.scrollIntoView({ behavior: 'smooth' });
         });
     </script>
 </body>
