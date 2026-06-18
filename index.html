@@ -38,7 +38,6 @@
             z-index: 1;
         }
 
-        /* MOLDURA JUNINA EM CSS NATIVO (À prova de falhas em mobile) */
         #decoracao-overlay {
             position: absolute;
             inset: 0;
@@ -48,7 +47,6 @@
             pointer-events: none;
         }
 
-        /* Varal de Bandeirinhas no Topo */
         .varal {
             position: absolute;
             top: 8px;
@@ -69,7 +67,6 @@
         .b4 { background: #29b6f6; }
         .b5 { background: #ff7043; }
 
-        /* Placa de Madeira com o Letreiro */
         .placa-festa {
             position: absolute;
             top: 48px;
@@ -86,7 +83,6 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
-        /* Cerquinha de Madeira na Base */
         .cerca-base {
             position: absolute;
             bottom: 0;
@@ -177,7 +173,7 @@
     <div id="resultado">
         <h3>Sua foto ficou linda! 🌽</h3>
         <img id="foto-final" src="" alt="Foto Junina Finalizada">
-        <p class="aviso-salvar">💡 No iPhone, se o botão falhar, segure o dedo na foto e toque em "Salvar em Fotos" para guardar na galeria.</p>
+        <p class="aviso-salvar">💡 No iPhone, se o download direto falhar, segure o dedo na foto e toque em "Salvar em Fotos" para guardar na galeria.</p>
         <a id="baixar-foto" download="arraia-emiliano-manojo.png"><button>💾 Baixar Foto</button></a>
     </div>
 
@@ -191,8 +187,13 @@
 
         async function iniciarCamera() {
             try {
+                // CORREÇÃO: Força resoluções padrão ideais para o hardware mobile responder na hora
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user" },
+                    video: { 
+                        facingMode: "user",
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    },
                     audio: false
                 });
                 video.srcObject = stream;
@@ -201,11 +202,16 @@
                 btnTirarFoto.disabled = false;
                 btnTirarFoto.innerHTML = "📸 Tirar Foto!";
             } catch (err) {
-                alert("Por favor, garanta o acesso à câmera nas configurações de privacidade do seu navegador.");
+                console.error("Erro na inicialização rápida:", err);
             }
         }
 
-        window.addEventListener('load', iniciarCamera);
+        // CORREÇÃO: Dispara a câmera no primeiro instante do carregamento da página, sem esperar imagens e estilos externos
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', iniciarCamera);
+        } else {
+            iniciarCamera();
+        }
 
         btnTirarFoto.addEventListener('click', () => {
             const vw = video.videoWidth || 640;
@@ -216,11 +222,8 @@
             const ctx = canvas.getContext('2d');
 
             ctx.clearRect(0, 0, vw, vh);
-
-            // 1. Salva o frame da câmera no fundo
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Desenha o Varal de Bandeirinhas de forma proporcional no download
             const qtdBands = 8;
             const largBand = vw / qtdBands;
             const altBand = vh * 0.07;
@@ -238,7 +241,6 @@
                 ctx.fill();
             }
 
-            // Desenha a Placa de Madeira com Letreiro no download
             const largPlaca = vw * 0.85;
             const altPlaca = vh * 0.08;
             const xPlaca = (vw - largPlaca) / 2;
@@ -256,7 +258,6 @@
             ctx.textBaseline = "middle";
             ctx.fillText("🔥 6ª EDIÇÃO • ARRAIÁ DA EMILIANO MANOJO 🌽", vw / 2, yPlaca + (altPlaca / 2));
 
-            // Cerquinha de Madeira na Base no download
             const altCerca = vh * 0.10;
             const yCerca = vh - altCerca;
 
