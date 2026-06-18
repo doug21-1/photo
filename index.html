@@ -38,7 +38,7 @@
             z-index: 1;
         }
 
-        /* Moldura simulada via CSS por cima da câmera */
+        /* Moldura gerada nativamente apenas por CSS */
         #moldura-visual {
             position: absolute;
             inset: 0;
@@ -46,11 +46,10 @@
             height: 100%;
             z-index: 10;
             pointer-events: none;
-            border: 18px solid #f57c00; /* Borda Laranja */
-            box-shadow: inset 0 0 0 4px #ffeb3b; /* Detalhe Amarelo */
+            border: 18px solid #f57c00; 
+            box-shadow: inset 0 0 0 4px #ffeb3b; 
         }
 
-        /* Placa Junina gerada via CSS por cima do vídeo */
         .tag-topo {
             position: absolute;
             top: 25px;
@@ -199,25 +198,22 @@
             const vw = video.videoWidth || video.clientWidth || 640;
             const vh = video.videoHeight || video.clientHeight || 480;
 
-            // Define o canvas para o tamanho nativo do sensor da câmera do celular
             canvas.width = vw;
             canvas.height = vh;
             const ctx = canvas.getContext('2d');
 
             ctx.clearRect(0, 0, vw, vh);
 
-            // 1. Renderiza o rosto da pessoa capturado do sensor (Camada de baixo)
+            // 1. Renderiza o rosto capturado da lente
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Cria e carimba a moldura junina por código diretamente por cima da foto (Camada de cima)
+            // 2. Desenha a moldura geométrica diretamente por cima da foto
             const espessuraBorda = Math.min(vw, vh) * 0.05;
             
-            // Desenha a borda principal laranja
             ctx.lineWidth = espessuraBorda;
             ctx.strokeStyle = "#f57c00"; 
             ctx.strokeRect(espessuraBorda / 2, espessuraBorda / 2, vw - espessuraBorda, vh - espessuraBorda);
 
-            // Desenha o friso interno amarelo
             ctx.lineWidth = espessuraBorda * 0.2;
             ctx.strokeStyle = "#ffeb3b"; 
             ctx.strokeRect(espessuraBorda + (ctx.lineWidth / 2), espessuraBorda + (ctx.lineWidth / 2), vw - (espessuraBorda * 2) - ctx.lineWidth, vh - (espessuraBorda * 2) - ctx.lineWidth);
@@ -235,14 +231,13 @@
             ctx.strokeStyle = "#ffeb3b";
             ctx.strokeRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
 
-            // Adiciona o texto adaptado para a resolução do download
             ctx.fillStyle = "#ffffff";
             ctx.font = `bold ${Math.floor(alturaPlaca * 0.45)}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText("6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO", vw / 2, yPlaca + (alturaPlaca / 2));
 
-            // 3. Junta as duas camadas e gera o link final estável para iPhone e Android
+            // 3. Exporta o resultado fundido
             try {
                 const dataUrl = canvas.toDataURL("image/png");
                 fotoFinal.src = dataUrl;
