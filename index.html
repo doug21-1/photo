@@ -24,11 +24,10 @@
             margin: 0 auto;
             border-radius: 15px;
             overflow: hidden;
-            background: #222; /* Fundo cinza escuro para notar se a câmera sumiu */
+            background: #222;
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
 
-        /* Vídeo renderizado no fundo sem travas visuais */
         #video {
             position: absolute;
             top: 0;
@@ -39,7 +38,7 @@
             z-index: 1;
         }
 
-        /* Moldura simulada via CSS por cima da câmera */
+        /* CORREÇÃO VISUAL: Renderiza a borda junina ao redor do visor em tempo real */
         #moldura-visual {
             position: absolute;
             inset: 0;
@@ -47,10 +46,11 @@
             height: 100%;
             z-index: 10;
             pointer-events: none;
-            border: 18px solid #f57c00; 
-            box-shadow: inset 0 0 0 5px #ffeb3b; 
+            border: 18px solid #f57c00; /* Borda Junina Laranja */
+            box-shadow: inset 0 0 0 4px #ffeb3b; /* Friso Amarelo Interno */
         }
 
+        /* Placa Junina centralizada no topo do visor */
         .tag-topo {
             position: absolute;
             top: 25px;
@@ -60,7 +60,7 @@
             color: #fff;
             padding: 6px 14px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
             border-radius: 6px;
             z-index: 12;
             white-space: nowrap;
@@ -107,7 +107,6 @@
             line-height: 1.4;
         }
 
-        /* Painel de Diagnóstico em tempo real na tela */
         #painel-status {
             background-color: #ffebee;
             color: #c62828;
@@ -127,8 +126,8 @@
     <p class="sub">Rua Emiliano Manojo - 6ª Edição</p>
 
     <div id="camera-container">
-        <!-- Parâmetros cruciais forçando execução nativa e instantânea no iOS -->
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
+        <!-- A Placa e a Borda agora possuem estilos fixos sobre a lente -->
         <div class="tag-topo">6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO</div>
         <div id="moldura-visual"></div>
     </div>
@@ -154,14 +153,12 @@
         const linkBaixar = document.getElementById('baixar-foto');
         const painelStatus = document.getElementById('painel-status');
 
-        // Validação imediata de ambiente seguro HTTPS
         if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
             painelStatus.innerHTML = "⚠️ ERRO CRÍTICO: Câmeras de celular são BLOQUEADAS em links normais. Você precisa publicar esse site em um link seguro 'https://' para funcionar.";
             painelStatus.style.backgroundColor = "#ffcdd2";
         }
 
         async function iniciarCamera() {
-            // Configurações simplificadas para evitar rejeição de formato por iPhones antigos
             const opcionais = [
                 { video: { facingMode: "user" }, audio: false },
                 { video: { facingMode: { exact: "user" } }, audio: false },
@@ -170,7 +167,6 @@
 
             let stream = null;
             
-            // Tenta abrir a câmera usando 3 estratégias de compatibilidade diferentes
             for (let config of opcionais) {
                 try {
                     stream = await navigator.mediaDevices.getUserMedia(config);
@@ -183,7 +179,6 @@
             if (stream) {
                 try {
                     video.srcObject = stream;
-                    // Força reprodução manual imediata
                     video.play();
                     
                     painelStatus.innerHTML = "✅ Câmera ativada com sucesso! Sorria para a foto.";
@@ -197,15 +192,13 @@
                     painelStatus.innerHTML = "Erro ao dar play no vídeo: " + playErr.message;
                 }
             } else {
-                painelStatus.innerHTML = "⚠️ Não foi possível acessar a câmera. Certifique-se de dar permissão de acesso à câmera nas configurações do seu navegador ou nos Ajustes do aparelho.";
+                painelStatus.innerHTML = "⚠️ Não foi possível acessar a câmera. Certifique-se de dar permissão de acesso à câmera nas configurações do seu navegador.";
             }
         }
 
-        // Inicia assim que a página carrega completamente
         window.addEventListener('load', iniciarCamera);
 
         btnTirarFoto.addEventListener('click', () => {
-            // Captura as dimensões em tempo real do sensor ativo
             const vw = video.videoWidth || video.clientWidth || 640;
             const vh = video.videoHeight || video.clientHeight || 480;
 
@@ -218,14 +211,14 @@
             // 1. Tira o print do rosto (Camada de baixo)
             ctx.drawImage(video, 0, 0, vw, vh);
 
-            // 2. Desenha a moldura geométrica por cima da foto (Camada de cima)
+            // 2. Desenha a moldura geométrica idêntica à da tela por cima da foto (Camada de cima)
             const espessuraBorda = Math.min(vw, vh) * 0.05;
             ctx.lineWidth = espessuraBorda;
-            ctx.strokeStyle = "#f57c00"; // Laranja
+            ctx.strokeStyle = "#f57c00"; 
             ctx.strokeRect(espessuraBorda / 2, espessuraBorda / 2, vw - espessuraBorda, vh - espessuraBorda);
 
             ctx.lineWidth = espessuraBorda * 0.2;
-            ctx.strokeStyle = "#ffeb3b"; // Amarelo
+            ctx.strokeStyle = "#ffeb3b"; 
             ctx.strokeRect(espessuraBorda + (ctx.lineWidth / 2), espessuraBorda + (ctx.lineWidth / 2), vw - (espessuraBorda * 2) - ctx.lineWidth, vh - (espessuraBorda * 2) - ctx.lineWidth);
 
             // Desenha a Placa de Texto Junina na foto salva
@@ -234,7 +227,7 @@
             const xPlaca = (vw - larguraPlaca) / 2;
             const yPlaca = vh * 0.06;
 
-            ctx.fillStyle = "#d32f2f"; // Vermelho
+            ctx.fillStyle = "#d32f2f"; 
             ctx.fillRect(xPlaca, yPlaca, larguraPlaca, alturaPlaca);
             
             ctx.lineWidth = 3;
@@ -247,7 +240,7 @@
             ctx.textBaseline = "middle";
             ctx.fillText("6ª EDIÇÃO 🌽 RUA EMILIANO MANOJO", vw / 2, yPlaca + (alturaPlaca / 2));
 
-            // 3. Converte e exibe o resultado
+            // 3. Converte e exibe o resultado final com as duas camadas fundidas
             try {
                 const dataUrl = canvas.toDataURL("image/png");
                 fotoFinal.src = dataUrl;
@@ -257,3 +250,10 @@
                 resultadoDiv.scrollIntoView({ behavior: "smooth", block: "center" });
             } catch (e) {
                 painelStatus.innerHTML = "Erro de segurança ao mesclar imagem: " + e.message;
+                painelStatus.style.backgroundColor = "#ffcdd2";
+                painelStatus.style.color = "#c62828";
+            }
+        });
+    </script>
+</body>
+</html>
