@@ -35,7 +35,7 @@
             background-color: #000;
         }
 
-        /* Configuração da sua nova moldura borda.png */
+        /* Exibição direta da moldura transparente */
         #moldura-oficial {
             position: absolute;
             top: 0;
@@ -45,8 +45,6 @@
             pointer-events: none;
             z-index: 10;
             object-fit: fill;
-            /* Remove o quadriculado cinza do meio da imagem na tela do celular */
-            mix-blend-mode: multiply; 
         }
 
         button {
@@ -103,8 +101,6 @@
 
     <div id="camera-container">
         <video id="video" autoplay playsinline muted></video>
-        
-        <!-- Alterado para buscar o arquivo borda.png -->
         <img id="moldura-oficial" src="borda.png" alt="Moldura Junina">
     </div>
 
@@ -169,11 +165,9 @@
             // 1. Desenha o rosto da pessoa
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // 2. Desenha a moldura por cima aplicando o filtro para remover o quadriculado do meio
+            // 2. Desenha a moldura transparente por cima de forma normal
             if (imgMoldura.complete && imgMoldura.naturalWidth > 0) {
-                context.globalCompositeOperation = 'multiply';
                 context.drawImage(imgMoldura, 0, 0, canvas.width, canvas.height);
-                context.globalCompositeOperation = 'source-over'; // Reseta o canvas para o modo normal
             }
 
             try {
